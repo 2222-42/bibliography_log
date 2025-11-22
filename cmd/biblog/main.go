@@ -48,7 +48,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "add-class":
-		addClassCmd.Parse(os.Args[2:])
+		_ = addClassCmd.Parse(os.Args[2:])
 		if *addClassCode == 0 || *addClassName == "" {
 			fmt.Println("Please provide -code and -name")
 			addClassCmd.PrintDefaults()
@@ -62,7 +62,7 @@ func main() {
 		fmt.Printf("Classification added: %v\n", class)
 
 	case "add-bib":
-		addBibCmd.Parse(os.Args[2:])
+		_ = addBibCmd.Parse(os.Args[2:])
 		if *addBibTitle == "" || *addBibAuthor == "" || *addBibType == "" || *addBibClass == 0 || *addBibYear == 0 {
 			fmt.Println("Please provide required fields: -title, -author, -type, -class, -year")
 			addBibCmd.PrintDefaults()
@@ -79,7 +79,7 @@ func main() {
 		fmt.Printf("Bibliography added: %v\n", bib)
 
 	case "add-review":
-		addReviewCmd.Parse(os.Args[2:])
+		_ = addReviewCmd.Parse(os.Args[2:])
 		if *addReviewBibIndex == "" || *addReviewGoals == "" {
 			fmt.Println("Please provide required fields: -bib-index, -goals")
 			addReviewCmd.PrintDefaults()
@@ -105,7 +105,7 @@ func main() {
 		fmt.Printf("Review added: %v\n", review)
 
 	case "list":
-		listCmd.Parse(os.Args[2:])
+		_ = listCmd.Parse(os.Args[2:])
 		bibs, err := app.BibService.ListBibliographies()
 		if err != nil {
 			fmt.Printf("Error listing bibliographies: %v\n", err)

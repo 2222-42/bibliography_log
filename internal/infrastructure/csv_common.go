@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"encoding/csv"
+	"log"
 	"os"
 )
 
@@ -15,7 +16,11 @@ func ReadCSV(filePath string) ([][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Failed to close file: %v", err)
+		}
+	}()
 
 	reader := csv.NewReader(file)
 	return reader.ReadAll()
@@ -28,7 +33,11 @@ func WriteCSV(filePath string, records [][]string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Failed to close file: %v", err)
+		}
+	}()
 
 	writer := csv.NewWriter(file)
 

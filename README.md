@@ -1,12 +1,16 @@
 # Bibliography Log
 
+![Go Tests](https://github.com/2222-42/bibliography_log/actions/workflows/test.yml/badge.svg)
+![Lint](https://github.com/2222-42/bibliography_log/actions/workflows/lint.yml/badge.svg)
+![Go Version](https://img.shields.io/github/go-mod/go-version/2222-42/bibliography_log)
+
 This directory contains a log of bibliographic references used in the development of Knowledge, especially Zettelkasten.
 
 The system is built using Go and follows Domain-Driven Design (DDD) principles.
 
 ## Prerequisites
 
-- Go 1.23 or later
+- Go 1.25.3 or later
 
 ## Setup
 

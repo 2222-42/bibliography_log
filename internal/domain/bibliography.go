@@ -18,4 +18,3 @@ type Bibliography struct {
 	Description   string
 	PublishedDate time.Time
 }
-
