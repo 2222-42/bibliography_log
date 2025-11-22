@@ -9,13 +9,15 @@
 ## Entities
 
 ### Bibliography
-- **Identity**: `BookID` (UUID)
+- **Identity**: `BibliographyID` (UUID)
 - **Attributes**:
   - `BibIndex` (String) (e.g., "B56SK24DMD(i.e. B56(Code)+SK(Author's Initials)+24(Bottom two digits of Published Year)+DMD(Book initials up to three letters))")
   - `Code` (String) (e.g., B56("B"(Book)+"56"("Technology)), "E16"("E"(Essay)+"16"("Philosophy")))
   - `Type` (String) (e.g., "Book", "Essay", "Video")
   - `Title` (String)
   - `Author` (String)
+  - `AuthorEn` (String)
+  - `TitleEn` (String)
   - `ISBN` (String, Value Object)
   - `Description` (String)
   - `PublishedDate` (Date)

@@ -16,6 +16,7 @@ func TestCSVBibliographyRepository_SaveAndFind(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer tmpFile.Close()           // ensure file handle is closed
 	defer os.Remove(tmpFile.Name()) // clean up
 
 	repo := NewCSVBibliographyRepository(tmpFile.Name())

@@ -31,7 +31,6 @@ func WriteCSV(filePath string, records [][]string) error {
 	defer file.Close()
 
 	writer := csv.NewWriter(file)
-	defer writer.Flush()
 
 	return writer.WriteAll(records)
 }
