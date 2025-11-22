@@ -1,10 +1,9 @@
 package service
 
 import (
+	"bibliography_log/internal/domain"
 	"testing"
 	"time"
-
-	"bibliography_log/internal/domain"
 
 	"github.com/google/uuid"
 )
@@ -87,7 +86,6 @@ func TestAddBibliography(t *testing.T) {
 	pubDate := time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	bib, err := svc.AddBibliography(title, author, isbn, desc, typeStr, classCode, pubDate, "", "", "")
-
 	// Assertions
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -123,7 +121,6 @@ func TestAddClassification(t *testing.T) {
 	name := "Test Class"
 
 	class, err := svc.AddClassification(codeNum, name)
-
 	// Assertions
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -321,7 +318,6 @@ func TestAddBibliography_JapaneseWithEnglish(t *testing.T) {
 		"Matthew Stewart",
 		"",
 	)
-
 	// Assertions
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
@@ -437,7 +433,6 @@ func TestAddBibliography_ManualBibIndex(t *testing.T) {
 		time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
 		"", "", manualIndex,
 	)
-
 	// Assertions
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)

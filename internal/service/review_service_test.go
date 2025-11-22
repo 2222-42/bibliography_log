@@ -1,10 +1,9 @@
 package service
 
 import (
+	"bibliography_log/internal/domain"
 	"fmt"
 	"testing"
-
-	"bibliography_log/internal/domain"
 
 	"github.com/google/uuid"
 )
@@ -60,7 +59,6 @@ func TestAddReview_Success(t *testing.T) {
 	goals := "Learn Go"
 	summary := "Great book"
 	review, err := svc.AddReview(bookID, goals, summary)
-
 	// Assertions
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)

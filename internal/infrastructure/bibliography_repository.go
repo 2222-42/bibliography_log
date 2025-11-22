@@ -1,10 +1,9 @@
 package infrastructure
 
 import (
+	"bibliography_log/internal/domain"
 	"log/slog"
 	"time"
-
-	"bibliography_log/internal/domain"
 
 	"github.com/google/uuid"
 )
