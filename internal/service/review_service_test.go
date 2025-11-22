@@ -93,6 +93,24 @@ func TestAddReview_EmptyGoals(t *testing.T) {
 	}
 }
 
+func TestAddReview_WhitespaceGoals(t *testing.T) {
+	// Setup
+	reviewRepo := &MockReviewRepository{}
+	bibRepo := &MockBibliographyRepository{}
+	svc := NewReviewService(reviewRepo, bibRepo)
+
+	// Test Case with whitespace-only goals
+	_, err := svc.AddReview(uuid.New(), "   ", "Summary")
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for whitespace-only goals, got nil")
+	}
+	if err.Error() != "goals are required and cannot be empty" {
+		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}
+
 func TestAddReview_BookNotFound(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{}
