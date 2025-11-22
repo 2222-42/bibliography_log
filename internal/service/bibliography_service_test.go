@@ -68,7 +68,7 @@ func TestAddBibliography(t *testing.T) {
 	classCode := 56
 	pubDate := time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC)
 
-	bib, err := svc.AddBibliography(title, author, isbn, desc, typeStr, classCode, pubDate, "", "")
+	bib, err := svc.AddBibliography(title, author, isbn, desc, typeStr, classCode, pubDate, "", "", "")
 
 	// Assertions
 	if err != nil {
@@ -163,7 +163,7 @@ func TestAddBibliography_EmptyTitle(t *testing.T) {
 	svc := NewBibliographyService(bibRepo, classRepo)
 
 	// Test Case with empty title
-	_, err := svc.AddBibliography("", "Author", "ISBN", "Desc", "Book", 56, time.Now(), "", "")
+	_, err := svc.AddBibliography("", "Author", "ISBN", "Desc", "Book", 56, time.Now(), "", "", "")
 
 	// Assertions
 	if err == nil {
@@ -185,7 +185,7 @@ func TestAddBibliography_EmptyAuthor(t *testing.T) {
 	svc := NewBibliographyService(bibRepo, classRepo)
 
 	// Test Case with empty author
-	_, err := svc.AddBibliography("Title", "", "ISBN", "Desc", "Book", 56, time.Now(), "", "")
+	_, err := svc.AddBibliography("Title", "", "ISBN", "Desc", "Book", 56, time.Now(), "", "", "")
 
 	// Assertions
 	if err == nil {
@@ -207,7 +207,7 @@ func TestAddBibliography_EmptyType(t *testing.T) {
 	svc := NewBibliographyService(bibRepo, classRepo)
 
 	// Test Case with empty type
-	_, err := svc.AddBibliography("Title", "Author", "ISBN", "Desc", "", 56, time.Now(), "", "")
+	_, err := svc.AddBibliography("Title", "Author", "ISBN", "Desc", "", 56, time.Now(), "", "", "")
 
 	// Assertions
 	if err == nil {
@@ -301,6 +301,7 @@ func TestAddBibliography_JapaneseWithEnglish(t *testing.T) {
 		time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		"The Management Myth",
 		"Matthew Stewart",
+		"",
 	)
 
 	// Assertions
@@ -351,6 +352,7 @@ func TestAddBibliography_JapaneseWithoutEnglish_TitleError(t *testing.T) {
 		time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		"", // No English title
 		"",
+		"",
 	)
 
 	// Assertions
@@ -383,6 +385,7 @@ func TestAddBibliography_JapaneseWithoutEnglish_AuthorError(t *testing.T) {
 		time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 		"",
 		"", // No English author
+		"",
 	)
 
 	// Assertions
@@ -391,5 +394,37 @@ func TestAddBibliography_JapaneseWithoutEnglish_AuthorError(t *testing.T) {
 	}
 	if err.Error() != "author contains Japanese characters; please provide English translation via -author-en flag" {
 		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}
+
+func TestAddBibliography_ManualBibIndex(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{
+		Classifications: map[int]*domain.BibClassification{
+			56: {CodeNum: 56, Name: "Technology"},
+		},
+	}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case with manual BibIndex
+	manualIndex := "CUSTOM123"
+	bib, err := svc.AddBibliography(
+		"Domain Driven Design",
+		"Eric Evans",
+		"978-0321125217",
+		"Desc",
+		"Book",
+		56,
+		time.Date(2003, 1, 1, 0, 0, 0, 0, time.UTC),
+		"", "", manualIndex,
+	)
+
+	// Assertions
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+	if bib.BibIndex != manualIndex {
+		t.Errorf("Expected BibIndex %s, got %s", manualIndex, bib.BibIndex)
 	}
 }

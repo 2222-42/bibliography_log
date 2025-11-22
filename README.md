@@ -110,7 +110,38 @@ Bibliography added: &{<uuid> B16MS24TMM B16 Book マネジメント神話 マシ
 
 > **Note:** The system automatically detects Japanese characters (Hiragana, Katakana, Kanji). English translations are only used for generating readable BibIndex codes; the original Japanese text is preserved in the stored data.
 
-### 5. Add Review
+### 5. Add Bibliography with Manual BibIndex
+
+You can manually specify the `BibIndex` using the `-bib-index` flag. This overrides the automatic generation logic.
+
+**Command:**
+```bash
+go run cmd/biblog/*.go add-bib \
+  -title "<title>" \
+  -author "<author>" \
+  -type "<type>" \
+  -class <class_code> \
+  -year <year> \
+  -bib-index "<custom_index>"
+```
+
+**Example:**
+```bash
+go run cmd/biblog/*.go add-bib \
+  -title "My Custom Book" \
+  -author "John Doe" \
+  -type "Book" \
+  -class 56 \
+  -year 2024 \
+  -bib-index "CUSTOM123"
+```
+
+**Output:**
+```
+Bibliography added: &{... BibIndex:CUSTOM123 ...}
+```
+
+### 6. Add Review
 
 Not implemented yet.
 

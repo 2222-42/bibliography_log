@@ -34,6 +34,7 @@ func main() {
 	addBibTitleEn := addBibCmd.String("title-en", "", "English translation of title (required if title contains Japanese)")
 	addBibAuthorEn := addBibCmd.String("author-en", "", "English translation of author (required if author contains Japanese)")
 
+	addBibIndex := addBibCmd.String("bib-index", "", "Manual BibIndex (overrides auto-generation)")
 	if len(os.Args) < 2 {
 		fmt.Println("expected 'add-class', 'add-bib' or 'list' subcommands")
 		os.Exit(1)
@@ -64,7 +65,7 @@ func main() {
 		// Construct date from year
 		publishedDate := time.Date(*addBibYear, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		bib, err := app.BibService.AddBibliography(*addBibTitle, *addBibAuthor, *addBibISBN, *addBibDesc, *addBibType, *addBibClass, publishedDate, *addBibTitleEn, *addBibAuthorEn)
+		bib, err := app.BibService.AddBibliography(*addBibTitle, *addBibAuthor, *addBibISBN, *addBibDesc, *addBibType, *addBibClass, publishedDate, *addBibTitleEn, *addBibAuthorEn, *addBibIndex)
 		if err != nil {
 			fmt.Printf("Error adding bibliography: %v\n", err)
 			os.Exit(1)
