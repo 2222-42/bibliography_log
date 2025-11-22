@@ -16,7 +16,6 @@
   - `Type` (String) (e.g., "Book", "Essay", "Video")
   - `Title` (String)
   - `Author` (String)
-  - `Publisher` (String)
   - `ISBN` (String, Value Object)
   - `Description` (String)
   - `PublishedDate` (Date)

@@ -83,6 +83,9 @@ func (r *CSVReviewRepository) FindAll() ([]*domain.Review, error) {
 	return reviews, nil
 }
 
+// FindByID implements domain.ReviewRepository.FindByID
+// Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
+// For large datasets, consider implementing caching or using a database for production use.
 func (r *CSVReviewRepository) FindByID(id uuid.UUID) (*domain.Review, error) {
 	all, err := r.FindAll()
 	if err != nil {
