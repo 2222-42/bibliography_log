@@ -5,20 +5,31 @@ import (
 	"time"
 
 	"bibliography_log/internal/domain"
+
+	"github.com/google/uuid"
 )
 
 // MockBibliographyRepository is a mock implementation of domain.BibliographyRepository
 type MockBibliographyRepository struct {
 	SavedBibliography *domain.Bibliography
+	Bibliographies    map[uuid.UUID]*domain.Bibliography
 }
 
 func (m *MockBibliographyRepository) Save(b *domain.Bibliography) error {
 	m.SavedBibliography = b
+	if m.Bibliographies == nil {
+		m.Bibliographies = make(map[uuid.UUID]*domain.Bibliography)
+	}
+	m.Bibliographies[b.ID] = b
 	return nil
 }
 
 func (m *MockBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
-	return nil, nil
+	var bibs []*domain.Bibliography
+	for _, b := range m.Bibliographies {
+		bibs = append(bibs, b)
+	}
+	return bibs, nil
 }
 
 func (m *MockBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {
