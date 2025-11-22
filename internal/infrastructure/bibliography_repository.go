@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"bibliography_log/internal/domain"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -53,8 +54,16 @@ func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 		if len(record) < 9 {
 			continue
 		}
-		id, _ := uuid.Parse(record[0])
-		pubDate, _ := time.Parse(time.RFC3339, record[8])
+		id, err := uuid.Parse(record[0])
+		if err != nil {
+			slog.Error("Failed to parse published date", "err", err)
+			continue
+		}
+		pubDate, err := time.Parse(time.RFC3339, record[8])
+		if err != nil {
+			slog.Error("Failed to parse published date", "err", err)
+			continue
+		}
 
 		bibliographies = append(bibliographies, &domain.Bibliography{
 			ID:            id,

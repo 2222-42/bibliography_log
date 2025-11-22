@@ -16,11 +16,11 @@
   - `Type` (String) (e.g., "Book", "Essay", "Video")
   - `Title` (String)
   - `Author` (String)
-  - `AuthorEn` (String)
-  - `TitleEn` (String)
   - `ISBN` (String, Value Object)
   - `Description` (String)
   - `PublishedDate` (Date)
+
+> **Note:** `AuthorEn` and `TitleEn` are not attributes of the persisted `Bibliography` entity. They are input parameters used temporarily during BibIndex generation in the service layer and are not stored.
 
 ### BibClassification
 - **Identity**: `BibClassificationID` (UUID)

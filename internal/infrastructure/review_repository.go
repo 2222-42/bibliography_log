@@ -16,6 +16,8 @@ func NewCSVReviewRepository(filePath string) *CSVReviewRepository {
 	return &CSVReviewRepository{FilePath: filePath}
 }
 
+// Save implements domain.ReviewRepository.Save
+// This contains potential race conditoin. But, it is not a problem in this cli application.
 func (r *CSVReviewRepository) Save(review *domain.Review) error {
 	all, err := r.FindAll()
 	if err != nil {
