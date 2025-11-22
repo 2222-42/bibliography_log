@@ -129,3 +129,25 @@ func TestAddClassification(t *testing.T) {
 		t.Error("Expected classification to be saved to repository")
 	}
 }
+
+func TestAddClassification_Duplicate(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{
+		Classifications: map[int]*domain.BibClassification{
+			99: {CodeNum: 99, Name: "Existing Class"},
+		},
+	}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case
+	codeNum := 99
+	name := "New Class"
+
+	_, err := svc.AddClassification(codeNum, name)
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for duplicate classification, got nil")
+	}
+}

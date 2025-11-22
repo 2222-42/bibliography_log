@@ -78,6 +78,15 @@ func (s *BibliographyService) ListBibliographies() ([]*domain.Bibliography, erro
 }
 
 func (s *BibliographyService) AddClassification(codeNum int, name string) (*domain.BibClassification, error) {
+	// Check if classification already exists
+	existing, err := s.classRepo.FindByCodeNum(codeNum)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check for existing classification: %w", err)
+	}
+	if existing != nil {
+		return nil, fmt.Errorf("classification with code %d already exists", codeNum)
+	}
+
 	class := &domain.BibClassification{
 		ID:      uuid.New(),
 		CodeNum: codeNum,
