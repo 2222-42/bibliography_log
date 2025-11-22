@@ -61,7 +61,8 @@ func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string
 // UpdateReview updates an existing review's goals and/or summary.
 // At least one of goals or summary must be provided (non-nil pointer).
 // If a field is nil, it will not be updated (preserves existing value).
-// If a field is an empty string, it will be set to empty (clears the field).
+// For goals: if provided, must be non-empty/non-whitespace (cannot be set to empty string).
+// For summary: if provided, can be set to empty string (no validation).
 func (s *ReviewService) UpdateReview(id uuid.UUID, goals *string, summary *string) (*domain.Review, error) {
 	// Validate that at least one field is being updated
 	if goals == nil && summary == nil {
