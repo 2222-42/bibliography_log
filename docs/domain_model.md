@@ -37,7 +37,7 @@
   - `CreatedAt` (DateTime)
   - `UpdatedAt` (DateTime)
 
-> **Note:** Unlike short identifier fields (e.g., `Title`, `Author` in Bibliography), `Goals` and `Summary` are text fields that may contain meaningful whitespace and line breaks. These fields are intentionally NOT trimmed during storage to preserve user formatting.
+> **Note:** Unlike short identifier fields (e.g., `Title`, `Author` in Bibliography which are trimmed), `Goals` and `Summary` are text fields that may contain meaningful whitespace and line breaks. While `TrimSpace()` is used during validation to check for empty content, the actual values are intentionally NOT trimmed during storage to preserve user formatting.
 
 ## Aggregates
 
