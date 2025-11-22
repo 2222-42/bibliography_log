@@ -32,10 +32,12 @@
 - **Identity**: `ReviewID` (UUID)
 - **Attributes**:
   - `BookID` (UUID, Foreign Key)
-  - `Goals` (String)
-  - `Summary` (String)
+  - `Goals` (String) - Text field that preserves whitespace and line breaks
+  - `Summary` (String) - Text field that preserves whitespace and line breaks
   - `CreatedAt` (DateTime)
   - `UpdatedAt` (DateTime)
+
+> **Note:** Unlike short identifier fields (e.g., `Title`, `Author` in Bibliography which are trimmed), `Goals` and `Summary` are text fields that may contain meaningful whitespace and line breaks. While `TrimSpace()` is used during validation to check for empty content, the actual values are intentionally NOT trimmed during storage to preserve user formatting.
 
 ## Aggregates
 

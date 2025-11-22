@@ -23,6 +23,10 @@ func NewReviewService(reviewRepo domain.ReviewRepository, bibRepo domain.Bibliog
 
 func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string) (*domain.Review, error) {
 	// Validate inputs
+	// Note: 'goals' and 'summary' are text fields that may contain meaningful whitespace
+	// and line breaks, so we do NOT trim them before storage (unlike short identifier fields
+	// like 'title' or 'author' which are trimmed in BibliographyService.AddBibliography).
+	// We only use TrimSpace() for validation to check if the content is non-empty.
 	// Note: 'summary' is optional and does not require validation. If this changes, add validation here.
 	if strings.TrimSpace(goals) == "" {
 		return nil, fmt.Errorf("goals are required and cannot be empty")
