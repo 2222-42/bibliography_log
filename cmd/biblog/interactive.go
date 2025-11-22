@@ -3,24 +3,49 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
+
+var (
+	reader     *bufio.Reader
+	readerOnce sync.Once
+)
+
+func getReader() *bufio.Reader {
+	readerOnce.Do(func() {
+		reader = bufio.NewReader(os.Stdin)
+	})
+	return reader
+}
 
 // promptString prompts the user for a string input.
 // If required is true, it loops until a non-empty string is provided.
 func promptString(label string, required bool) string {
-	reader := bufio.NewReader(os.Stdin)
+	r := getReader()
 	for {
 		if required {
 			fmt.Printf("%s (*required): ", label)
 		} else {
 			fmt.Printf("%s (optional): ", label)
 		}
-		input, err := reader.ReadString('\n')
+		input, err := r.ReadString('\n')
 		if err != nil {
-			if input == "" && !required {
+			if err == io.EOF {
+				// If we got some input before EOF, use it
+				if strings.TrimSpace(input) != "" {
+					fmt.Println() // Add newline for cleaner output
+					return strings.TrimSpace(input)
+				}
+				// If EOF with no input and optional, return empty
+				if !required {
+					return ""
+				}
+			}
+			if input == "" && !required && err == io.EOF {
 				return ""
 			}
 			fmt.Printf("\nError reading input: %v\n", err)
@@ -40,17 +65,26 @@ func promptString(label string, required bool) string {
 // If required is true, it loops until a valid integer is provided.
 // If not required and input is empty, it returns 0.
 func promptInt(label string, required bool) int {
-	reader := bufio.NewReader(os.Stdin)
+	r := getReader()
 	for {
 		if required {
 			fmt.Printf("%s (*required): ", label)
 		} else {
 			fmt.Printf("%s (optional): ", label)
 		}
-		input, err := reader.ReadString('\n')
+		input, err := r.ReadString('\n')
 		if err != nil {
-			if input == "" && !required {
-				return 0
+			if err == io.EOF {
+				if strings.TrimSpace(input) != "" {
+					fmt.Println()
+					val, convErr := strconv.Atoi(strings.TrimSpace(input))
+					if convErr == nil {
+						return val
+					}
+				}
+				if !required {
+					return 0
+				}
 			}
 			fmt.Printf("\nError reading input: %v\n", err)
 			os.Exit(1)
