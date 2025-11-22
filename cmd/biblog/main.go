@@ -71,9 +71,30 @@ func main() {
 	case "add-bib":
 		_ = addBibCmd.Parse(os.Args[2:])
 		if *addBibTitle == "" || *addBibAuthor == "" || *addBibType == "" || *addBibClass == 0 || *addBibYear == 0 {
-			fmt.Println("Please provide required fields: -title, -author, -type, -class, -year")
-			addBibCmd.PrintDefaults()
-			os.Exit(1)
+			if *addBibTitle == "" {
+				*addBibTitle = promptString("Title", true)
+			}
+			if *addBibAuthor == "" {
+				*addBibAuthor = promptString("Author", true)
+			}
+			if *addBibPublisher == "" {
+				*addBibPublisher = promptString("Publisher", false)
+			}
+			if *addBibType == "" {
+				*addBibType = promptString("Type", true)
+			}
+			if *addBibClass == 0 {
+				*addBibClass = promptInt("Classification Code Number", true)
+			}
+			if *addBibYear == 0 {
+				*addBibYear = promptInt("Published Year", true)
+			}
+			if *addBibISBN == "" {
+				*addBibISBN = promptString("ISBN", false)
+			}
+			if *addBibIndex == "" {
+				*addBibIndex = promptString("BibIndex", false)
+			}
 		}
 		// Construct date from year
 		publishedDate := time.Date(*addBibYear, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -88,9 +109,15 @@ func main() {
 	case "add-review":
 		_ = addReviewCmd.Parse(os.Args[2:])
 		if *addReviewBibIndex == "" || *addReviewGoals == "" {
-			fmt.Println("Please provide required fields: -bib-index, -goals")
-			addReviewCmd.PrintDefaults()
-			os.Exit(1)
+			if *addReviewBibIndex == "" {
+				*addReviewBibIndex = promptString("BibIndex", true)
+			}
+			if *addReviewGoals == "" {
+				*addReviewGoals = promptString("Goals", true)
+			}
+			if *addReviewSummary == "" {
+				*addReviewSummary = promptString("Summary", false)
+			}
 		}
 
 		// Resolve BibIndex to ID efficiently
@@ -114,9 +141,16 @@ func main() {
 	case "update-review":
 		_ = updateReviewCmd.Parse(os.Args[2:])
 		if *updateReviewID == "" {
-			fmt.Println("Please provide required field: -review-id")
-			updateReviewCmd.PrintDefaults()
-			os.Exit(1)
+			*updateReviewID = promptString("Review UUID", true)
+		}
+		if *updateReviewGoals == "" && *updateReviewSummary == "" {
+			// If neither is provided via flags, prompt for them
+			if *updateReviewGoals == "" {
+				*updateReviewGoals = promptString("New goals", false)
+			}
+			if *updateReviewSummary == "" {
+				*updateReviewSummary = promptString("New summary", false)
+			}
 		}
 
 		// Parse UUID
@@ -136,10 +170,10 @@ func main() {
 			summary = updateReviewSummary
 		}
 
-		// Validate at least one field is provided
+		// Validate at least one field is provided (after prompting)
 		if goals == nil && summary == nil {
 			fmt.Println("Please provide at least one field to update: -goals or -summary")
-			updateReviewCmd.PrintDefaults()
+			// If interactive mode was used, they might have skipped both optional fields
 			os.Exit(1)
 		}
 
