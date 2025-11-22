@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -18,6 +20,7 @@ func main() {
 	addClassCmd := flag.NewFlagSet("add-class", flag.ExitOnError)
 	addBibCmd := flag.NewFlagSet("add-bib", flag.ExitOnError)
 	addReviewCmd := flag.NewFlagSet("add-review", flag.ExitOnError)
+	updateReviewCmd := flag.NewFlagSet("update-review", flag.ExitOnError)
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
 	// Add Class Flags
@@ -41,8 +44,13 @@ func main() {
 	addReviewGoals := addReviewCmd.String("goals", "", "Goals for reading (required)")
 	addReviewSummary := addReviewCmd.String("summary", "", "Summary of the review")
 
+	// Update Review Flags
+	updateReviewID := updateReviewCmd.String("review-id", "", "UUID of the review to update (required)")
+	updateReviewGoals := updateReviewCmd.String("goals", "", "New goals for reading (optional)")
+	updateReviewSummary := updateReviewCmd.String("summary", "", "New summary of the review (optional)")
+
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'add-class', 'add-bib', 'add-review' or 'list' subcommands")
+		fmt.Println("expected 'add-class', 'add-bib', 'add-review', 'update-review' or 'list' subcommands")
 		os.Exit(1)
 	}
 
@@ -104,6 +112,45 @@ func main() {
 		}
 		fmt.Printf("Review added: %v\n", review)
 
+	case "update-review":
+		_ = updateReviewCmd.Parse(os.Args[2:])
+		if *updateReviewID == "" {
+			fmt.Println("Please provide required field: -review-id")
+			updateReviewCmd.PrintDefaults()
+			os.Exit(1)
+		}
+
+		// Parse UUID
+		reviewID, err := uuid.Parse(*updateReviewID)
+		if err != nil {
+			fmt.Printf("Invalid review ID format: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Prepare optional fields
+		var goals *string
+		var summary *string
+		if *updateReviewGoals != "" {
+			goals = updateReviewGoals
+		}
+		if *updateReviewSummary != "" {
+			summary = updateReviewSummary
+		}
+
+		// Validate at least one field is provided
+		if goals == nil && summary == nil {
+			fmt.Println("Please provide at least one field to update: -goals or -summary")
+			updateReviewCmd.PrintDefaults()
+			os.Exit(1)
+		}
+
+		review, err := app.ReviewService.UpdateReview(reviewID, goals, summary)
+		if err != nil {
+			fmt.Printf("Error updating review: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Review updated: %v\n", review)
+
 	case "list":
 		_ = listCmd.Parse(os.Args[2:])
 		bibs, err := app.BibService.ListBibliographies()
@@ -117,7 +164,7 @@ func main() {
 		}
 
 	default:
-		fmt.Println("expected 'add-class', 'add-bib', 'add-review' or 'list' subcommands")
+		fmt.Println("expected 'add-class', 'add-bib', 'add-review', 'update-review' or 'list' subcommands")
 		os.Exit(1)
 	}
 }
