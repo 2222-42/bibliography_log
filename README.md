@@ -74,7 +74,43 @@ Bibliographies:
 [Book] Domain Driven Design by Eric Evans (BibIndex: B56EE03DDD)
 ```
 
-### 4. Add Review
+### 4. Add Bibliography with Japanese Text
+
+When adding bibliographies with Japanese titles or authors, you must provide English translations for BibIndex generation.
+
+**Command:**
+```bash
+go run cmd/biblog/*.go add-bib \
+  -title "<japanese_title>" \
+  -title-en "<english_title>" \
+  -author "<japanese_author>" \
+  -author-en "<english_author>" \
+  -type "<type>" \
+  -class <class_code> \
+  -year <year>
+```
+
+**Example:**
+```bash
+go run cmd/biblog/*.go add-bib \
+  -title "マネジメント神話" \
+  -title-en "The Management Myth" \
+  -author "マシュー・スチュワート" \
+  -author-en "Matthew Stewart" \
+  -type "Book" \
+  -class 16 \
+  -year 2024 \
+  -isbn "978-4750356884"
+```
+
+**Output:**
+```
+Bibliography added: &{<uuid> B16MS24TMM B16 Book マネジメント神話 マシュー・スチュワート 978-4750356884  2024-01-01 00:00:00 +0000 UTC}
+```
+
+> **Note:** The system automatically detects Japanese characters (Hiragana, Katakana, Kanji). English translations are only used for generating readable BibIndex codes; the original Japanese text is preserved in the stored data.
+
+### 5. Add Review
 
 Not implemented yet.
 

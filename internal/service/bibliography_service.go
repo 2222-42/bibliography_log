@@ -22,7 +22,7 @@ func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo dom
 	}
 }
 
-func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time) (*domain.Bibliography, error) {
+func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time, titleEn, authorEn string) (*domain.Bibliography, error) {
 	// Input validation for required fields
 	if strings.TrimSpace(title) == "" {
 		return nil, fmt.Errorf("title is required and cannot be empty")
@@ -32,6 +32,14 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 	}
 	if strings.TrimSpace(typeStr) == "" {
 		return nil, fmt.Errorf("type is required and cannot be empty")
+	}
+
+	// Check for Japanese text and require English translations
+	if containsJapanese(title) && strings.TrimSpace(titleEn) == "" {
+		return nil, fmt.Errorf("title contains Japanese characters; please provide English translation via -title-en flag")
+	}
+	if containsJapanese(author) && strings.TrimSpace(authorEn) == "" {
+		return nil, fmt.Errorf("author contains Japanese characters; please provide English translation via -author-en flag")
 	}
 
 	// 1. Find Classification
@@ -51,9 +59,19 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 	typePrefix := string(typeStr[0])
 	code := fmt.Sprintf("%s%d", typePrefix, class.CodeNum)
 
-	authorInitials := generateAuthorInitials(author)
+	// Use English versions for BibIndex generation if provided, otherwise use original
+	authorForIndex := author
+	if strings.TrimSpace(authorEn) != "" {
+		authorForIndex = authorEn
+	}
+	titleForIndex := title
+	if strings.TrimSpace(titleEn) != "" {
+		titleForIndex = titleEn
+	}
+
+	authorInitials := generateAuthorInitials(authorForIndex)
 	yearSuffix := publishedDate.Format("06") // Last 2 digits of year
-	titleInitials := generateTitleInitials(title)
+	titleInitials := generateTitleInitials(titleForIndex)
 
 	bibIndex := fmt.Sprintf("%s%s%s%s", code, authorInitials, yearSuffix, titleInitials)
 
@@ -158,4 +176,19 @@ func generateTitleInitials(title string) string {
 		}
 	}
 	return strings.ToUpper(initials)
+}
+
+// containsJapanese checks if a string contains Japanese characters (Hiragana, Katakana, or Kanji)
+func containsJapanese(s string) bool {
+	for _, r := range s {
+		// Hiragana: U+3040-U+309F
+		// Katakana: U+30A0-U+30FF
+		// Kanji: U+4E00-U+9FAF
+		if (r >= 0x3040 && r <= 0x309F) || // Hiragana
+			(r >= 0x30A0 && r <= 0x30FF) || // Katakana
+			(r >= 0x4E00 && r <= 0x9FAF) { // Kanji
+			return true
+		}
+	}
+	return false
 }
