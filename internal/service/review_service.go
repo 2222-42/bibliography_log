@@ -3,6 +3,7 @@ package service
 import (
 	"bibliography_log/internal/domain"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,7 +24,7 @@ func NewReviewService(reviewRepo domain.ReviewRepository, bibRepo domain.Bibliog
 func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string) (*domain.Review, error) {
 	// Validate inputs
 	// Note: 'summary' is optional and does not require validation. If this changes, add validation here.
-	if goals == "" {
+	if strings.TrimSpace(goals) == "" {
 		return nil, fmt.Errorf("goals are required and cannot be empty")
 	}
 
