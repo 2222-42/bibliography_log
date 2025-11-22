@@ -10,7 +10,8 @@ import (
 
 // App holds the application dependencies.
 type App struct {
-	BibService *service.BibliographyService
+	BibService    *service.BibliographyService
+	ReviewService *service.ReviewService
 }
 
 // NewApp initializes the application and its dependencies.
@@ -26,15 +27,14 @@ func NewApp() (*App, error) {
 	// Initialize Repositories
 	bibRepo := infrastructure.NewCSVBibliographyRepository(dataDir + "/bibliographies.csv")
 	classRepo := infrastructure.NewCSVBibClassificationRepository(dataDir + "/classifications.csv")
-	// Review repository is not used in the CLI yet, but good to initialize if we were using it.
-	// reviewRepo := infrastructure.NewCSVReviewRepository(dataDir + "/reviews.csv")
+	reviewRepo := infrastructure.NewCSVReviewRepository(dataDir + "/reviews.csv")
 
 	// Initialize Service
-	// Note: BibliographyService currently only needs bibRepo and classRepo.
-	// If it needed reviewRepo, we would pass it here.
-	svc := service.NewBibliographyService(bibRepo, classRepo)
+	bibSvc := service.NewBibliographyService(bibRepo, classRepo)
+	reviewSvc := service.NewReviewService(reviewRepo, bibRepo)
 
 	return &App{
-		BibService: svc,
+		BibService:    bibSvc,
+		ReviewService: reviewSvc,
 	}, nil
 }

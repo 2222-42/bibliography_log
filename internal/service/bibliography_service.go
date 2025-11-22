@@ -116,6 +116,10 @@ func (s *BibliographyService) ListBibliographies() ([]*domain.Bibliography, erro
 	return s.bibRepo.FindAll()
 }
 
+func (s *BibliographyService) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {
+	return s.bibRepo.FindByBibIndex(bibIndex)
+}
+
 func (s *BibliographyService) AddClassification(codeNum int, name string) (*domain.BibClassification, error) {
 	// Validate name is not empty or whitespace
 	if strings.TrimSpace(name) == "" {

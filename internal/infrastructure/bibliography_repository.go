@@ -100,6 +100,22 @@ func (r *CSVBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bib
 	return nil, nil
 }
 
+// FindByID implements domain.BibliographyRepository.FindByID
+// Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
+// For large datasets, consider implementing caching or using a database for production use.
+func (r *CSVBibliographyRepository) FindByID(id uuid.UUID) (*domain.Bibliography, error) {
+	all, err := r.FindAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range all {
+		if b.ID == id {
+			return b, nil
+		}
+	}
+	return nil, nil
+}
+
 func (r *CSVBibliographyRepository) writeAll(bibliographies []*domain.Bibliography) error {
 	var records [][]string
 	// Header

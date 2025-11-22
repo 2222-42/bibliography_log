@@ -17,6 +17,7 @@ func main() {
 	// Subcommands
 	addClassCmd := flag.NewFlagSet("add-class", flag.ExitOnError)
 	addBibCmd := flag.NewFlagSet("add-bib", flag.ExitOnError)
+	addReviewCmd := flag.NewFlagSet("add-review", flag.ExitOnError)
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
 	// Add Class Flags
@@ -33,10 +34,15 @@ func main() {
 	addBibDesc := addBibCmd.String("desc", "", "Description")
 	addBibTitleEn := addBibCmd.String("title-en", "", "English translation of title (required if title contains Japanese)")
 	addBibAuthorEn := addBibCmd.String("author-en", "", "English translation of author (required if author contains Japanese)")
-
 	addBibIndex := addBibCmd.String("bib-index", "", "Manual BibIndex (overrides auto-generation and bypasses English translation requirements)")
+
+	// Add Review Flags
+	addReviewBibIndex := addReviewCmd.String("bib-index", "", "BibIndex of the bibliography to review")
+	addReviewGoals := addReviewCmd.String("goals", "", "Goals for reading (required)")
+	addReviewSummary := addReviewCmd.String("summary", "", "Summary of the review")
+
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'add-class', 'add-bib' or 'list' subcommands")
+		fmt.Println("expected 'add-class', 'add-bib', 'add-review' or 'list' subcommands")
 		os.Exit(1)
 	}
 
@@ -72,6 +78,32 @@ func main() {
 		}
 		fmt.Printf("Bibliography added: %v\n", bib)
 
+	case "add-review":
+		addReviewCmd.Parse(os.Args[2:])
+		if *addReviewBibIndex == "" || *addReviewGoals == "" {
+			fmt.Println("Please provide required fields: -bib-index, -goals")
+			addReviewCmd.PrintDefaults()
+			os.Exit(1)
+		}
+
+		// Resolve BibIndex to ID efficiently
+		bib, err := app.BibService.FindByBibIndex(*addReviewBibIndex)
+		if err != nil {
+			fmt.Printf("Error finding bibliography with BibIndex %s: %v\n", *addReviewBibIndex, err)
+			os.Exit(1)
+		}
+		if bib == nil {
+			fmt.Printf("Bibliography with BibIndex %s not found\n", *addReviewBibIndex)
+			os.Exit(1)
+		}
+
+		review, err := app.ReviewService.AddReview(bib.ID, *addReviewGoals, *addReviewSummary)
+		if err != nil {
+			fmt.Printf("Error adding review: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Review added: %v\n", review)
+
 	case "list":
 		listCmd.Parse(os.Args[2:])
 		bibs, err := app.BibService.ListBibliographies()
@@ -85,7 +117,7 @@ func main() {
 		}
 
 	default:
-		fmt.Println("expected 'add-class', 'add-bib' or 'list' subcommands")
+		fmt.Println("expected 'add-class', 'add-bib', 'add-review' or 'list' subcommands")
 		os.Exit(1)
 	}
 }
