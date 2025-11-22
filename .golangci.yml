@@ -3,19 +3,19 @@ linters:
   enable:
     - durationcheck
     - forcetypeassert
-  presets:
-    - comments
-    - common-false-positives
-    - legacy
-    - std-error-handling
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - forcetypeassert
+        path: _test\.go
 issues:
   max-same-issues: 0
-  exclude-rules:
-    - linters:
-        - forcetypeassert
-      path: 
-        - _test\.go
-        - data
 formatters:
   settings:
     gofumpt:
