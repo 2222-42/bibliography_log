@@ -1,0 +1,27 @@
+version: "2"
+linters:
+  enable:
+    - durationcheck
+    - forcetypeassert
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - forcetypeassert
+        path: _test\.go
+    paths:
+      - data
+issues:
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofumpt
+  exclusions:
+    generated: lax
+    paths:
+      - data
