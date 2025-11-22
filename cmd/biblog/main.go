@@ -70,7 +70,7 @@ func main() {
 
 	case "add-bib":
 		_ = addBibCmd.Parse(os.Args[2:])
-		if *addBibTitle == "" || *addBibAuthor == "" || *addBibType == "" || *addBibClass == 0 || *addBibYear == 0 {
+		if *addBibTitle == "" || *addBibAuthor == "" || *addBibType == "" || *addBibClass == 0 || *addBibYear == 0 || *addBibPublisher == "" || *addBibISBN == "" || *addBibIndex == "" {
 			if *addBibTitle == "" {
 				*addBibTitle = promptString("Title", true)
 			}
@@ -108,7 +108,7 @@ func main() {
 
 	case "add-review":
 		_ = addReviewCmd.Parse(os.Args[2:])
-		if *addReviewBibIndex == "" || *addReviewGoals == "" {
+		if *addReviewBibIndex == "" || *addReviewGoals == "" || *addReviewSummary == "" {
 			if *addReviewBibIndex == "" {
 				*addReviewBibIndex = promptString("BibIndex", true)
 			}

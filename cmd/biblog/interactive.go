@@ -18,7 +18,14 @@ func promptString(label string, required bool) string {
 		} else {
 			fmt.Printf("%s (optional): ", label)
 		}
-		input, _ := reader.ReadString('\n')
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			if input == "" && !required {
+				return ""
+			}
+			fmt.Printf("\nError reading input: %v\n", err)
+			os.Exit(1)
+		}
 		input = strings.TrimSpace(input)
 		if input != "" {
 			return input
@@ -40,7 +47,14 @@ func promptInt(label string, required bool) int {
 		} else {
 			fmt.Printf("%s (optional): ", label)
 		}
-		input, _ := reader.ReadString('\n')
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			if input == "" && !required {
+				return 0
+			}
+			fmt.Printf("\nError reading input: %v\n", err)
+			os.Exit(1)
+		}
 		input = strings.TrimSpace(input)
 		if input == "" && !required {
 			return 0
