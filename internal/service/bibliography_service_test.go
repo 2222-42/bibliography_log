@@ -151,3 +151,105 @@ func TestAddClassification_Duplicate(t *testing.T) {
 		t.Fatal("Expected error for duplicate classification, got nil")
 	}
 }
+
+func TestAddBibliography_EmptyTitle(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{
+		Classifications: map[int]*domain.BibClassification{
+			56: {CodeNum: 56, Name: "Technology"},
+		},
+	}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case with empty title
+	_, err := svc.AddBibliography("", "Author", "ISBN", "Desc", "Book", 56, time.Now())
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for empty title, got nil")
+	}
+	if err.Error() != "title is required and cannot be empty" {
+		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}
+
+func TestAddBibliography_EmptyAuthor(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{
+		Classifications: map[int]*domain.BibClassification{
+			56: {CodeNum: 56, Name: "Technology"},
+		},
+	}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case with empty author
+	_, err := svc.AddBibliography("Title", "", "ISBN", "Desc", "Book", 56, time.Now())
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for empty author, got nil")
+	}
+	if err.Error() != "author is required and cannot be empty" {
+		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}
+
+func TestAddBibliography_EmptyType(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{
+		Classifications: map[int]*domain.BibClassification{
+			56: {CodeNum: 56, Name: "Technology"},
+		},
+	}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case with empty type
+	_, err := svc.AddBibliography("Title", "Author", "ISBN", "Desc", "", 56, time.Now())
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for empty type, got nil")
+	}
+	if err.Error() != "type is required and cannot be empty" {
+		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}
+
+func TestAddClassification_EmptyName(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case with empty name
+	_, err := svc.AddClassification(99, "")
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for empty name, got nil")
+	}
+	if err.Error() != "classification name must not be empty" {
+		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}
+
+func TestAddClassification_WhitespaceName(t *testing.T) {
+	// Setup
+	bibRepo := &MockBibliographyRepository{}
+	classRepo := &MockBibClassificationRepository{}
+	svc := NewBibliographyService(bibRepo, classRepo)
+
+	// Test Case with whitespace-only name
+	_, err := svc.AddClassification(99, "   ")
+
+	// Assertions
+	if err == nil {
+		t.Fatal("Expected error for whitespace-only name, got nil")
+	}
+	if err.Error() != "classification name must not be empty" {
+		t.Errorf("Expected specific error message, got: %v", err)
+	}
+}

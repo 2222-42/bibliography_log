@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -13,7 +12,7 @@ import (
 
 func TestCSVBibliographyRepository_SaveAndFind(t *testing.T) {
 	// Setup temporary file
-	tmpFile, err := ioutil.TempFile("", "bib_test_*.csv")
+	tmpFile, err := os.CreateTemp("", "bib_test_*.csv")
 	if err != nil {
 		t.Fatal(err)
 	}

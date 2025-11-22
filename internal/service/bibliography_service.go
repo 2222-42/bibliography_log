@@ -23,6 +23,17 @@ func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo dom
 }
 
 func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time) (*domain.Bibliography, error) {
+	// Input validation for required fields
+	if strings.TrimSpace(title) == "" {
+		return nil, fmt.Errorf("title is required and cannot be empty")
+	}
+	if strings.TrimSpace(author) == "" {
+		return nil, fmt.Errorf("author is required and cannot be empty")
+	}
+	if strings.TrimSpace(typeStr) == "" {
+		return nil, fmt.Errorf("type is required and cannot be empty")
+	}
+
 	// 1. Find Classification
 	class, err := s.classRepo.FindByCodeNum(classCodeNum)
 	if err != nil {
@@ -34,15 +45,9 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 
 	// 2. Generate BibIndex
 	// Format: Code + AuthorInitials + Year + TitleInitials
-	// Code: e.g. B56.
-	// Wait, the domain model says Code is "B56".
-	// But Classification has CodeNum 56 and Name "Technology".
-	// We need to construct the Code.
-	// The domain model says: Code (String) (e.g., B56("B"(Book)+"56"("Technology)), "E16"("E"(Essay)+"16"("Philosophy")))
-	// So we need a way to map Type to a prefix letter.
-	// "Book" -> "B", "Essay" -> "E", "Video" -> "V"?
-	// I'll assume first letter of Type for now.
-
+	// The Code is constructed by concatenating a type prefix (first letter of the type string, e.g. "B" for "Book")
+	// with the classification code number (e.g. 56 for "Technology").
+	// Example: "Book" type and classification code 56 yields "B56".
 	typePrefix := string(typeStr[0])
 	code := fmt.Sprintf("%s%d", typePrefix, class.CodeNum)
 
@@ -78,6 +83,11 @@ func (s *BibliographyService) ListBibliographies() ([]*domain.Bibliography, erro
 }
 
 func (s *BibliographyService) AddClassification(codeNum int, name string) (*domain.BibClassification, error) {
+	// Validate name is not empty or whitespace
+	if strings.TrimSpace(name) == "" {
+		return nil, fmt.Errorf("classification name must not be empty")
+	}
+
 	// Check if classification already exists
 	existing, err := s.classRepo.FindByCodeNum(codeNum)
 	if err != nil {
@@ -93,7 +103,7 @@ func (s *BibliographyService) AddClassification(codeNum int, name string) (*doma
 		Name:    name,
 	}
 	if err := s.classRepo.Save(class); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to save classification: %w", err)
 	}
 	return class, nil
 }
@@ -112,7 +122,18 @@ func generateAuthorInitials(author string) string {
 	// First and Last name initials
 	first := parts[0]
 	last := parts[len(parts)-1]
-	return strings.ToUpper(string(first[0]) + string(last[0]))
+	var firstInitial, lastInitial string
+	if len(first) > 0 {
+		firstInitial = string(first[0])
+	} else {
+		firstInitial = "X"
+	}
+	if len(last) > 0 {
+		lastInitial = string(last[0])
+	} else {
+		lastInitial = "X"
+	}
+	return strings.ToUpper(firstInitial + lastInitial)
 }
 
 func generateTitleInitials(title string) string {
@@ -124,9 +145,12 @@ func generateTitleInitials(title string) string {
 	var initials string
 	count := 0
 	for _, part := range parts {
-		// Skip small words? The domain model didn't specify, but usually "The", "A" are skipped.
-		// For simplicity, I'll include everything for now or maybe skip common stop words if I want to be fancy.
-		// I'll just take all words for now.
+		// Note: All words are currently included when generating initials, including small words like "The" and "A".
+		// Skipping common stop words is not implemented, but could be added as a future enhancement.
+		// The current implementation takes the first letter of the first three words, regardless of word size.
+		if len(part) == 0 {
+			continue
+		}
 		initials += string(part[0])
 		count++
 		if count >= 3 {
