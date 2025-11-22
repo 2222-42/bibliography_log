@@ -22,13 +22,14 @@ func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo dom
 	}
 }
 
-func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time, titleEn, authorEn string) (*domain.Bibliography, error) {
+func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time, titleEn, authorEn, manualBibIndex string) (*domain.Bibliography, error) {
 	// Normalize inputs by trimming whitespace
 	title = strings.TrimSpace(title)
 	author = strings.TrimSpace(author)
 	typeStr = strings.TrimSpace(typeStr)
 	titleEn = strings.TrimSpace(titleEn)
 	authorEn = strings.TrimSpace(authorEn)
+	manualBibIndex = strings.TrimSpace(manualBibIndex)
 
 	// Input validation for required fields
 	if title == "" {
@@ -42,11 +43,14 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 	}
 
 	// Check for Japanese text and require English translations
-	if containsJapanese(title) && titleEn == "" {
-		return nil, fmt.Errorf("title contains Japanese characters; please provide English translation via -title-en flag")
-	}
-	if containsJapanese(author) && authorEn == "" {
-		return nil, fmt.Errorf("author contains Japanese characters; please provide English translation via -author-en flag")
+	// Only required if manualBibIndex is NOT provided
+	if manualBibIndex == "" {
+		if containsJapanese(title) && titleEn == "" {
+			return nil, fmt.Errorf("title contains Japanese characters; please provide English translation via -title-en flag")
+		}
+		if containsJapanese(author) && authorEn == "" {
+			return nil, fmt.Errorf("author contains Japanese characters; please provide English translation via -author-en flag")
+		}
 	}
 
 	// 1. Find Classification
@@ -66,21 +70,26 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 	typePrefix := string(typeStr[0])
 	code := fmt.Sprintf("%s%d", typePrefix, class.CodeNum)
 
-	// Use English versions for BibIndex generation if provided, otherwise use original
-	authorForIndex := author
-	if authorEn != "" {
-		authorForIndex = authorEn
-	}
-	titleForIndex := title
-	if titleEn != "" {
-		titleForIndex = titleEn
-	}
+	var bibIndex string
+	if manualBibIndex != "" {
+		bibIndex = manualBibIndex
+	} else {
+		// Use English versions for BibIndex generation if provided, otherwise use original
+		authorForIndex := author
+		if authorEn != "" {
+			authorForIndex = authorEn
+		}
+		titleForIndex := title
+		if titleEn != "" {
+			titleForIndex = titleEn
+		}
 
-	authorInitials := generateAuthorInitials(authorForIndex)
-	yearSuffix := publishedDate.Format("06") // Last 2 digits of year
-	titleInitials := generateTitleInitials(titleForIndex)
+		authorInitials := generateAuthorInitials(authorForIndex)
+		yearSuffix := publishedDate.Format("06") // Last 2 digits of year
+		titleInitials := generateTitleInitials(titleForIndex)
 
-	bibIndex := fmt.Sprintf("%s%s%s%s", code, authorInitials, yearSuffix, titleInitials)
+		bibIndex = fmt.Sprintf("%s%s%s%s", code, authorInitials, yearSuffix, titleInitials)
+	}
 
 	// 3. Create Entity
 	bib := &domain.Bibliography{
