@@ -164,7 +164,7 @@ func generateTitleInitials(title string) string {
 	count := 0
 	for _, part := range parts {
 		// Note: All words are currently included when generating initials, including small words like "The" and "A".
-		// Skipping common stop words is not implemented, but could be added as a future enhancement.
+		// TODO: Skipping common stop words is not implemented; consider adding this as a future enhancement.
 		// The current implementation takes the first letter of the first three words, regardless of word size.
 		if len(part) == 0 {
 			continue
