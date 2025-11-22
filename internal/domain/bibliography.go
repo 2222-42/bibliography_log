@@ -42,7 +42,7 @@ type Bibliography struct {
 	Type          string // e.g., "Book", "Essay"
 	Title         string
 	Author        string
+	Publisher     string
 	ISBN          string
-	Description   string
 	PublishedDate time.Time
 }

@@ -1,3 +1,4 @@
-ID,BibIndex,Code,Type,Title,Author,ISBN,Description,PublishedDate
-f792718c-c789-48b8-8d89-0d8650d4fe35,B56EE03DDD,B56,Book,Domain Driven Design,Eric Evans,978-0321125217,Tackling Complexity in the Heart of Software,2003-01-01T00:00:00Z
-d52ee692-f8ee-49fb-ad30-4e3da68059a8,B16MS24MM,B16,Book,マネジメント神話　現代ビジネス哲学の真実に迫る,マシュー スチュワート(稲岡大志訳),978-4750356884,,2024-01-01T00:00:00Z
+ID,BibIndex,Code,Type,Title,Author,Publisher,ISBN,PublishedDate
+f792718c-c789-48b8-8d89-0d8650d4fe35,B56EE03DDD,B56,Book,Domain Driven Design,Eric Evans,Addison-Wesley,978-0321125217,2003-01-01T00:00:00Z
+d52ee692-f8ee-49fb-ad30-4e3da68059a8,B16MS24MM,B16,Book,マネジメント神話　現代ビジネス哲学の真実に迫る,マシュー スチュワート(稲岡大志訳),,978-4750356884,2024-01-01T00:00:00Z
+f2978362-43da-4465-862e-a638a3c0598e,B56TA24TB,B56,Book,Test Book,Test Author,Test Publisher,,2024-01-01T00:00:00Z

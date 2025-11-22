@@ -51,12 +51,12 @@ Add a new bibliography entry. The `BibIndex` will be automatically generated bas
 
 **Command:**
 ```bash
-go run cmd/biblog/*.go add-bib -title "<title>" -author "<author>" -type "<type>" -class <class_code> -year <year> -isbn "<isbn>" -desc "<description>"
+go run cmd/biblog/*.go add-bib -title "<title>" -author "<author>" -publisher "<publisher>" -type "<type>" -class <class_code> -year <year> -isbn "<isbn>"
 ```
 
 **Example:**
 ```bash
-go run cmd/biblog/*.go add-bib -title "Domain Driven Design" -author "Eric Evans" -type "Book" -class 56 -year 2003 -isbn "978-0321125217" -desc "Tackling Complexity in the Heart of Software"
+go run cmd/biblog/*.go add-bib -title "Domain Driven Design" -author "Eric Evans" -publisher "Addison-Wesley" -type "Book" -class 56 -year 2003 -isbn "978-0321125217"
 ```
 **Output:**
 ```

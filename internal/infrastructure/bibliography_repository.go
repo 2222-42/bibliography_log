@@ -15,8 +15,8 @@ type BibliographyRecord struct {
 	Type          string
 	Title         string
 	Author        string
+	Publisher     string
 	ISBN          string
-	Description   string
 	PublishedDate string
 }
 
@@ -39,8 +39,8 @@ func recordToBibliography(rec *BibliographyRecord) (*domain.Bibliography, error)
 		Type:          rec.Type,
 		Title:         rec.Title,
 		Author:        rec.Author,
+		Publisher:     rec.Publisher,
 		ISBN:          rec.ISBN,
-		Description:   rec.Description,
 		PublishedDate: pubDate,
 	}, nil
 }
@@ -54,8 +54,8 @@ func bibliographyToRecord(bib *domain.Bibliography) *BibliographyRecord {
 		Type:          bib.Type,
 		Title:         bib.Title,
 		Author:        bib.Author,
+		Publisher:     bib.Publisher,
 		ISBN:          bib.ISBN,
-		Description:   bib.Description,
 		PublishedDate: bib.PublishedDate.Format(time.RFC3339),
 	}
 }
@@ -118,8 +118,8 @@ func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 			Type:          record[3],
 			Title:         record[4],
 			Author:        record[5],
-			ISBN:          record[6],
-			Description:   record[7],
+			Publisher:     record[6],
+			ISBN:          record[7],
 			PublishedDate: record[8],
 		}
 
@@ -169,7 +169,7 @@ func (r *CSVBibliographyRepository) FindByID(id domain.BibliographyID) (*domain.
 func (r *CSVBibliographyRepository) writeAll(bibliographies []*domain.Bibliography) error {
 	var records [][]string
 	// Header
-	records = append(records, []string{"ID", "BibIndex", "Code", "Type", "Title", "Author", "ISBN", "Description", "PublishedDate"})
+	records = append(records, []string{"ID", "BibIndex", "Code", "Type", "Title", "Author", "Publisher", "ISBN", "PublishedDate"})
 
 	for _, b := range bibliographies {
 		rec := bibliographyToRecord(b)
@@ -180,8 +180,8 @@ func (r *CSVBibliographyRepository) writeAll(bibliographies []*domain.Bibliograp
 			rec.Type,
 			rec.Title,
 			rec.Author,
+			rec.Publisher,
 			rec.ISBN,
-			rec.Description,
 			rec.PublishedDate,
 		}
 		records = append(records, record)

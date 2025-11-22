@@ -29,11 +29,11 @@ func main() {
 	// Add Bib Flags
 	addBibTitle := addBibCmd.String("title", "", "Title of the bibliography")
 	addBibAuthor := addBibCmd.String("author", "", "Author of the bibliography")
+	addBibPublisher := addBibCmd.String("publisher", "", "Publisher of the bibliography")
 	addBibType := addBibCmd.String("type", "", "Type (Book, Essay, Video, etc.)")
 	addBibClass := addBibCmd.Int("class", 0, "Classification Code Number")
 	addBibYear := addBibCmd.Int("year", 0, "Published Year (e.g. 2024)")
 	addBibISBN := addBibCmd.String("isbn", "", "ISBN")
-	addBibDesc := addBibCmd.String("desc", "", "Description")
 	addBibTitleEn := addBibCmd.String("title-en", "", "English translation of title (required if title contains Japanese)")
 	addBibAuthorEn := addBibCmd.String("author-en", "", "English translation of author (required if author contains Japanese)")
 	addBibIndex := addBibCmd.String("bib-index", "", "Manual BibIndex (overrides auto-generation and bypasses English translation requirements)")
@@ -78,7 +78,7 @@ func main() {
 		// Construct date from year
 		publishedDate := time.Date(*addBibYear, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		bib, err := app.BibService.AddBibliography(*addBibTitle, *addBibAuthor, *addBibISBN, *addBibDesc, *addBibType, *addBibClass, publishedDate, *addBibTitleEn, *addBibAuthorEn, *addBibIndex)
+		bib, err := app.BibService.AddBibliography(*addBibTitle, *addBibAuthor, *addBibPublisher, *addBibISBN, *addBibType, *addBibClass, publishedDate, *addBibTitleEn, *addBibAuthorEn, *addBibIndex)
 		if err != nil {
 			fmt.Printf("Error adding bibliography: %v\n", err)
 			os.Exit(1)
