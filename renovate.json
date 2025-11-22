@@ -1,7 +1,26 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-        "config:base"
+        "config:recommended",
+        ":configMigration"
+    ],
+    "reviewers": [
+        "2222-42"
+    ],
+    "prConcurrentLimit": 2,
+    "prCreation": "not-pending",
+    "major": {
+        "minimumReleaseAge": "7 days"
+    },
+    "minor": {
+        "minimumReleaseAge": "7 days"
+    },
+    "patch": {
+        "minimumReleaseAge": "7 days",
+        "automerge": true
+    },
+    "schedule": [
+        "every weekend"
     ],
     "labels": [
         "dependencies"
