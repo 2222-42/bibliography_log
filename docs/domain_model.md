@@ -4,7 +4,7 @@
 
 - **Bibliography**: A published work of literature, papers or podcasts that can be read and reviewed.
 - **BibClassification**: A classification of a bibliography.
-- **Review**: A user's evaluation of a book, consisting of a rating and an optional comment.
+- **Review**: A user's evaluation of a book, consisting of goals and a summary.
 
 ## Entities
 
