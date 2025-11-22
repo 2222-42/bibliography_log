@@ -6,6 +6,7 @@ import "github.com/google/uuid"
 type BibliographyRepository interface {
 	Save(bibliography *Bibliography) error
 	FindAll() ([]*Bibliography, error)
+	FindByID(id uuid.UUID) (*Bibliography, error)
 	FindByBibIndex(bibIndex string) (*Bibliography, error)
 }
 

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -88,28 +86,18 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Resolve BibIndex to ID
-		bibs, err := app.BibService.ListBibliographies()
+		// Resolve BibIndex to ID efficiently
+		bib, err := app.BibService.FindByBibIndex(*addReviewBibIndex)
 		if err != nil {
-			fmt.Printf("Error listing bibliographies: %v\n", err)
+			fmt.Printf("Error finding bibliography with BibIndex %s: %v\n", *addReviewBibIndex, err)
 			os.Exit(1)
 		}
-		var foundBibID uuid.UUID
-		found := false
-		for _, b := range bibs {
-			if b.BibIndex == *addReviewBibIndex {
-				foundBibID = b.ID
-				found = true
-				break
-			}
-		}
-		
-		if !found {
+		if bib == nil {
 			fmt.Printf("Bibliography with BibIndex %s not found\n", *addReviewBibIndex)
 			os.Exit(1)
 		}
 
-		review, err := app.ReviewService.AddReview(foundBibID, *addReviewGoals, *addReviewSummary)
+		review, err := app.ReviewService.AddReview(bib.ID, *addReviewGoals, *addReviewSummary)
 		if err != nil {
 			fmt.Printf("Error adding review: %v\n", err)
 			os.Exit(1)

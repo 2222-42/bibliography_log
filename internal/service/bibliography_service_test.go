@@ -32,6 +32,13 @@ func (m *MockBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 	return bibs, nil
 }
 
+func (m *MockBibliographyRepository) FindByID(id uuid.UUID) (*domain.Bibliography, error) {
+	if m.Bibliographies == nil {
+		return nil, nil
+	}
+	return m.Bibliographies[id], nil
+}
+
 func (m *MockBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {
 	return nil, nil
 }

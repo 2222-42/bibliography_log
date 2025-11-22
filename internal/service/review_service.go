@@ -22,29 +22,18 @@ func NewReviewService(reviewRepo domain.ReviewRepository, bibRepo domain.Bibliog
 
 func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string) (*domain.Review, error) {
 	// Validate inputs
+	// Note: 'summary' is optional and does not require validation. If this changes, add validation here.
 	if goals == "" {
 		return nil, fmt.Errorf("goals are required and cannot be empty")
 	}
 
 	// Verify book exists
-	// Note: Ideally we should have FindByID, but for now we rely on the caller to provide a valid ID
-	// or we can implement FindByID in BibliographyRepository if needed.
-	// Given the current repository interface, we might need to rely on the caller or add FindByID.
-	// Let's assume for now that the caller (CLI) resolves the ID correctly.
-	// However, to be safe, we should verify existence if possible.
-	// Since FindAll is available, we can use it to verify.
-	allBibs, err := s.bibRepo.FindAll()
+	// Use FindByID for efficient existence check.
+	bib, err := s.bibRepo.FindByID(bookID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify book existence: %w", err)
 	}
-	found := false
-	for _, b := range allBibs {
-		if b.ID == bookID {
-			found = true
-			break
-		}
-	}
-	if !found {
+	if bib == nil {
 		return nil, fmt.Errorf("bibliography with ID %s not found", bookID)
 	}
 

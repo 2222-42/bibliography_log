@@ -100,6 +100,19 @@ func (r *CSVBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bib
 	return nil, nil
 }
 
+func (r *CSVBibliographyRepository) FindByID(id uuid.UUID) (*domain.Bibliography, error) {
+	all, err := r.FindAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range all {
+		if b.ID == id {
+			return b, nil
+		}
+	}
+	return nil, nil
+}
+
 func (r *CSVBibliographyRepository) writeAll(bibliographies []*domain.Bibliography) error {
 	var records [][]string
 	// Header
