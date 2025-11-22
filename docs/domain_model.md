@@ -1,4 +1,4 @@
-# Bibliography LogDomain Model
+# Bibliography Log Domain Model
 
 ## Ubiquitous Language
 
