@@ -27,6 +27,11 @@ The system is built using Go and follows Domain-Driven Design (DDD) principles.
 
 The system provides a CLI for managing bibliographies and classifications.
 
+### Interactive Mode
+
+Commands `add-bib`, `add-review`, and `update-review` support interactive mode. If you omit the required flags, the CLI will prompt you for input.
+
+
 ### 1. Add a Classification
 
 Before adding a bibliography, you must ensure the classification exists.
@@ -217,6 +222,8 @@ go test ./internal/...
 The data is stored in CSV files in the `data/` directory:
 - `data/bibliographies.csv`: Stores bibliography entries.
 - `data/classifications.csv`: Stores classification codes.
+- `data/reviews.csv`: Stores reviews for bibliographies.
+
 
 ## Performance Limitations
 
