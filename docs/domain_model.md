@@ -3,8 +3,22 @@
 ## Ubiquitous Language
 
 - **Bibliography**: A published work of literature, papers or podcasts that can be read and reviewed.
-- **BibClassification**: A classification of a bibliography.
+- **Classification**: A classification of a bibliography.
 - **Review**: A user's evaluation of a book, consisting of goals and a summary.
+
+## Domain-Specific Types
+
+To improve type safety and prevent accidental misuse of IDs across different entities, the system uses domain-specific ID types instead of raw UUIDs:
+
+- **BibliographyID**: Type-safe wrapper for Bibliography entity IDs
+- **ReviewID**: Type-safe wrapper for Review entity IDs  
+- **ClassificationID**: Type-safe wrapper for Classification entity IDs
+
+These types provide compile-time safety, preventing errors like passing a ReviewID where a BibliographyID is expected. Each type includes helper methods:
+- `String()` - returns UUID string representation
+- `UUID()` - returns underlying uuid.UUID
+- `NewXXXID()` - generates new random ID
+- `ParseXXXID(string)` - parses from string
 
 ## Entities
 
@@ -22,16 +36,16 @@
 
 > **Note:** `AuthorEn` and `TitleEn` are not attributes of the persisted `Bibliography` entity. They are input parameters used temporarily during BibIndex generation in the service layer and are not stored.
 
-### BibClassification
-- **Identity**: `BibClassificationID` (UUID)
+### Classification
+- **Identity**: `ClassificationID` (domain-specific type wrapping UUID)
 - **Attributes**:
   - `CodeNum` (Integer) (e.g., 56)
   - `Name` (String) (e.g., "Technology")
 
 ### Review
-- **Identity**: `ReviewID` (UUID)
+- **Identity**: `ReviewID` (domain-specific type wrapping UUID)
 - **Attributes**:
-  - `BookID` (UUID, Foreign Key)
+  - `BookID` (BibliographyID, Foreign Key)
   - `Goals` (String) - Text field that preserves whitespace and line breaks
   - `Summary` (String) - Text field that preserves whitespace and line breaks
   - `CreatedAt` (DateTime)

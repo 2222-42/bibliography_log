@@ -1,12 +1,11 @@
 package main
 
 import (
+	"bibliography_log/internal/domain"
 	"flag"
 	"fmt"
 	"os"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -121,7 +120,7 @@ func main() {
 		}
 
 		// Parse UUID
-		reviewID, err := uuid.Parse(*updateReviewID)
+		reviewID, err := domain.ParseReviewID(*updateReviewID)
 		if err != nil {
 			fmt.Printf("Invalid review ID format: %v\n", err)
 			os.Exit(1)

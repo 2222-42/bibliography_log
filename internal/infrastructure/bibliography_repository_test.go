@@ -5,8 +5,6 @@ import (
 	"os"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func TestCSVBibliographyRepository_SaveAndFind(t *testing.T) {
@@ -28,7 +26,7 @@ func TestCSVBibliographyRepository_SaveAndFind(t *testing.T) {
 
 	// Test Save
 	bib := &domain.Bibliography{
-		ID:            uuid.New(),
+		ID:            domain.NewBibliographyID(),
 		BibIndex:      "B56TEST",
 		Code:          "B56",
 		Type:          "Book",

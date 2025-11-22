@@ -2,25 +2,60 @@ package infrastructure
 
 import (
 	"bibliography_log/internal/domain"
+	"fmt"
+	"log/slog"
 	"strconv"
-
-	"github.com/google/uuid"
 )
 
-// CSVBibClassificationRepository implements domain.BibClassificationRepository using a CSV file.
-type CSVBibClassificationRepository struct {
+// ClassificationRecord represents a classification record for CSV persistence.
+type ClassificationRecord struct {
+	ID      string
+	CodeNum string
+	Name    string
+}
+
+// recordToClassification converts a ClassificationRecord to a domain.Classification.
+func recordToClassification(rec *ClassificationRecord) (*domain.Classification, error) {
+	id, err := domain.ParseClassificationID(rec.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse classification ID: %w", err)
+	}
+
+	codeNum, err := strconv.Atoi(rec.CodeNum)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse code number: %w", err)
+	}
+
+	return &domain.Classification{
+		ID:      id,
+		CodeNum: codeNum,
+		Name:    rec.Name,
+	}, nil
+}
+
+// classificationToRecord converts a domain.Classification to a ClassificationRecord.
+func classificationToRecord(class *domain.Classification) *ClassificationRecord {
+	return &ClassificationRecord{
+		ID:      class.ID.String(),
+		CodeNum: strconv.Itoa(class.CodeNum),
+		Name:    class.Name,
+	}
+}
+
+// CSVClassificationRepository implements domain.ClassificationRepository using a CSV file.
+type CSVClassificationRepository struct {
 	FilePath string
 }
 
-func NewCSVBibClassificationRepository(filePath string) *CSVBibClassificationRepository {
-	return &CSVBibClassificationRepository{FilePath: filePath}
+func NewCSVClassificationRepository(filePath string) *CSVClassificationRepository {
+	return &CSVClassificationRepository{FilePath: filePath}
 }
 
-// Save implements domain.BibClassificationRepository.Save
+// Save implements domain.ClassificationRepository.Save
 // Potential race condition: This method reads all records, modifies them, and writes them back
 // without any locking mechanism. Acceptable for single-user CLI usage, but consider file locking
 // or using a database with proper transaction support for production use.
-func (r *CSVBibClassificationRepository) Save(c *domain.BibClassification) error {
+func (r *CSVClassificationRepository) Save(c *domain.Classification) error {
 	all, err := r.FindAll()
 	if err != nil {
 		return err
@@ -41,13 +76,13 @@ func (r *CSVBibClassificationRepository) Save(c *domain.BibClassification) error
 	return r.writeAll(all)
 }
 
-func (r *CSVBibClassificationRepository) FindAll() ([]*domain.BibClassification, error) {
+func (r *CSVClassificationRepository) FindAll() ([]*domain.Classification, error) {
 	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var classifications []*domain.BibClassification
+	var classifications []*domain.Classification
 	if len(records) > 0 {
 		records = records[1:]
 	}
@@ -56,25 +91,25 @@ func (r *CSVBibClassificationRepository) FindAll() ([]*domain.BibClassification,
 		if len(record) < 3 {
 			continue
 		}
-		id, err := uuid.Parse(record[0])
-		if err != nil {
-			continue // Skip records with invalid UUIDs
-		}
-		codeNum, err := strconv.Atoi(record[1])
-		if err != nil {
-			continue // Skip records with invalid code numbers
+
+		classRecord := &ClassificationRecord{
+			ID:      record[0],
+			CodeNum: record[1],
+			Name:    record[2],
 		}
 
-		classifications = append(classifications, &domain.BibClassification{
-			ID:      id,
-			CodeNum: codeNum,
-			Name:    record[2],
-		})
+		class, err := recordToClassification(classRecord)
+		if err != nil {
+			slog.Error("Failed to convert classification record", "err", err)
+			continue
+		}
+
+		classifications = append(classifications, class)
 	}
 	return classifications, nil
 }
 
-func (r *CSVBibClassificationRepository) FindByCodeNum(codeNum int) (*domain.BibClassification, error) {
+func (r *CSVClassificationRepository) FindByCodeNum(codeNum int) (*domain.Classification, error) {
 	all, err := r.FindAll()
 	if err != nil {
 		return nil, err
@@ -87,15 +122,16 @@ func (r *CSVBibClassificationRepository) FindByCodeNum(codeNum int) (*domain.Bib
 	return nil, nil
 }
 
-func (r *CSVBibClassificationRepository) writeAll(classifications []*domain.BibClassification) error {
+func (r *CSVClassificationRepository) writeAll(classifications []*domain.Classification) error {
 	var records [][]string
 	records = append(records, []string{"ID", "CodeNum", "Name"})
 
 	for _, c := range classifications {
+		rec := classificationToRecord(c)
 		record := []string{
-			c.ID.String(),
-			strconv.Itoa(c.CodeNum),
-			c.Name,
+			rec.ID,
+			rec.CodeNum,
+			rec.Name,
 		}
 		records = append(records, record)
 	}
