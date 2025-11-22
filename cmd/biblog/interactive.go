@@ -44,9 +44,9 @@ func promptString(label string, required bool) string {
 				if !required {
 					return ""
 				}
-			}
-			if input == "" && !required && err == io.EOF {
-				return ""
+				// If EOF with no input and required, exit with error
+				fmt.Printf("\nError: required input for '%s' not provided before EOF\n", label)
+				os.Exit(1)
 			}
 			fmt.Printf("\nError reading input: %v\n", err)
 			os.Exit(1)
@@ -85,6 +85,9 @@ func promptInt(label string, required bool) int {
 				if !required {
 					return 0
 				}
+				// If required and EOF with no valid input, exit with error
+				fmt.Printf("\nError: required integer input for '%s' but reached end of input.\n", label)
+				os.Exit(1)
 			}
 			fmt.Printf("\nError reading input: %v\n", err)
 			os.Exit(1)
