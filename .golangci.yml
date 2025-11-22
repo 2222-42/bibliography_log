@@ -13,8 +13,11 @@ issues:
   exclude-rules:
     - linters:
         - forcetypeassert
-      path: _test\.go
-    - path: data
-output:
-  formats:
-    - gofumpt
+      path: 
+        - _test\.go
+        - data
+formatters:
+  settings:
+    gofumpt:
+      module-path: github.com/daioh/bibliography_log
+      extra-rules: true
