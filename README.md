@@ -74,7 +74,7 @@ Bibliographies:
 [Book] Domain Driven Design by Eric Evans (BibIndex: B56EE03DDD)
 ```
 
-### 4. Add Reivew
+### 4. Add Review
 
 Not implemented yet.
 
