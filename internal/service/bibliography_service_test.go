@@ -4,20 +4,18 @@ import (
 	"bibliography_log/internal/domain"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // MockBibliographyRepository is a mock implementation of domain.BibliographyRepository
 type MockBibliographyRepository struct {
 	SavedBibliography *domain.Bibliography
-	Bibliographies    map[uuid.UUID]*domain.Bibliography
+	Bibliographies    map[domain.BibliographyID]*domain.Bibliography
 }
 
 func (m *MockBibliographyRepository) Save(b *domain.Bibliography) error {
 	m.SavedBibliography = b
 	if m.Bibliographies == nil {
-		m.Bibliographies = make(map[uuid.UUID]*domain.Bibliography)
+		m.Bibliographies = make(map[domain.BibliographyID]*domain.Bibliography)
 	}
 	m.Bibliographies[b.ID] = b
 	return nil
@@ -31,7 +29,7 @@ func (m *MockBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 	return bibs, nil
 }
 
-func (m *MockBibliographyRepository) FindByID(id uuid.UUID) (*domain.Bibliography, error) {
+func (m *MockBibliographyRepository) FindByID(id domain.BibliographyID) (*domain.Bibliography, error) {
 	if m.Bibliographies == nil {
 		return nil, nil
 	}
@@ -42,24 +40,24 @@ func (m *MockBibliographyRepository) FindByBibIndex(_ string) (*domain.Bibliogra
 	return nil, nil
 }
 
-// MockBibClassificationRepository is a mock implementation of domain.BibClassificationRepository
-type MockBibClassificationRepository struct {
-	Classifications map[int]*domain.BibClassification
+// MockClassificationRepository is a mock implementation of domain.ClassificationRepository
+type MockClassificationRepository struct {
+	Classifications map[int]*domain.Classification
 }
 
-func (m *MockBibClassificationRepository) Save(c *domain.BibClassification) error {
+func (m *MockClassificationRepository) Save(c *domain.Classification) error {
 	if m.Classifications == nil {
-		m.Classifications = make(map[int]*domain.BibClassification)
+		m.Classifications = make(map[int]*domain.Classification)
 	}
 	m.Classifications[c.CodeNum] = c
 	return nil
 }
 
-func (m *MockBibClassificationRepository) FindAll() ([]*domain.BibClassification, error) {
+func (m *MockClassificationRepository) FindAll() ([]*domain.Classification, error) {
 	return nil, nil
 }
 
-func (m *MockBibClassificationRepository) FindByCodeNum(codeNum int) (*domain.BibClassification, error) {
+func (m *MockClassificationRepository) FindByCodeNum(codeNum int) (*domain.Classification, error) {
 	if c, ok := m.Classifications[codeNum]; ok {
 		return c, nil
 	}
@@ -69,8 +67,8 @@ func (m *MockBibClassificationRepository) FindByCodeNum(codeNum int) (*domain.Bi
 func TestAddBibliography(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			56: {CodeNum: 56, Name: "Technology"},
 		},
 	}
@@ -113,7 +111,7 @@ func TestAddBibliography(t *testing.T) {
 func TestAddClassification(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{}
+	classRepo := &MockClassificationRepository{}
 	svc := NewBibliographyService(bibRepo, classRepo)
 
 	// Test Case
@@ -148,8 +146,8 @@ func TestAddClassification(t *testing.T) {
 func TestAddClassification_Duplicate(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			99: {CodeNum: 99, Name: "Existing Class"},
 		},
 	}
@@ -170,8 +168,8 @@ func TestAddClassification_Duplicate(t *testing.T) {
 func TestAddBibliography_EmptyTitle(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			56: {CodeNum: 56, Name: "Technology"},
 		},
 	}
@@ -192,8 +190,8 @@ func TestAddBibliography_EmptyTitle(t *testing.T) {
 func TestAddBibliography_EmptyAuthor(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			56: {CodeNum: 56, Name: "Technology"},
 		},
 	}
@@ -214,8 +212,8 @@ func TestAddBibliography_EmptyAuthor(t *testing.T) {
 func TestAddBibliography_EmptyType(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			56: {CodeNum: 56, Name: "Technology"},
 		},
 	}
@@ -236,7 +234,7 @@ func TestAddBibliography_EmptyType(t *testing.T) {
 func TestAddClassification_EmptyName(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{}
+	classRepo := &MockClassificationRepository{}
 	svc := NewBibliographyService(bibRepo, classRepo)
 
 	// Test Case with empty name
@@ -254,7 +252,7 @@ func TestAddClassification_EmptyName(t *testing.T) {
 func TestAddClassification_WhitespaceName(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{}
+	classRepo := &MockClassificationRepository{}
 	svc := NewBibliographyService(bibRepo, classRepo)
 
 	// Test Case with whitespace-only name
@@ -298,8 +296,8 @@ func TestContainsJapanese(t *testing.T) {
 func TestAddBibliography_JapaneseWithEnglish(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			16: {CodeNum: 16, Name: "Philosophy"},
 		},
 	}
@@ -348,8 +346,8 @@ func TestAddBibliography_JapaneseWithEnglish(t *testing.T) {
 func TestAddBibliography_JapaneseWithoutEnglish_TitleError(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			16: {CodeNum: 16, Name: "Philosophy"},
 		},
 	}
@@ -381,8 +379,8 @@ func TestAddBibliography_JapaneseWithoutEnglish_TitleError(t *testing.T) {
 func TestAddBibliography_JapaneseWithoutEnglish_AuthorError(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			16: {CodeNum: 16, Name: "Philosophy"},
 		},
 	}
@@ -414,8 +412,8 @@ func TestAddBibliography_JapaneseWithoutEnglish_AuthorError(t *testing.T) {
 func TestAddBibliography_ManualBibIndex(t *testing.T) {
 	// Setup
 	bibRepo := &MockBibliographyRepository{}
-	classRepo := &MockBibClassificationRepository{
-		Classifications: map[int]*domain.BibClassification{
+	classRepo := &MockClassificationRepository{
+		Classifications: map[int]*domain.Classification{
 			56: {CodeNum: 56, Name: "Technology"},
 		},
 	}

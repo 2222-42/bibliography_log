@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type ReviewService struct {
@@ -21,7 +19,7 @@ func NewReviewService(reviewRepo domain.ReviewRepository, bibRepo domain.Bibliog
 	}
 }
 
-func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string) (*domain.Review, error) {
+func (s *ReviewService) AddReview(bookID domain.BibliographyID, goals string, summary string) (*domain.Review, error) {
 	// Validate inputs
 	// Note: 'goals' and 'summary' are text fields that may contain meaningful whitespace
 	// and line breaks, so we do NOT trim them before storage (unlike short identifier fields
@@ -43,7 +41,7 @@ func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string
 	}
 
 	review := &domain.Review{
-		ID:        uuid.New(),
+		ID:        domain.NewReviewID(),
 		BookID:    bookID,
 		Goals:     goals,
 		Summary:   summary,
@@ -63,7 +61,7 @@ func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string
 // If a field is nil, it will not be updated (preserves existing value).
 // For goals: if provided, must be non-empty/non-whitespace (cannot be set to empty string).
 // For summary: if provided, can be set to empty string (no validation).
-func (s *ReviewService) UpdateReview(id uuid.UUID, goals *string, summary *string) (*domain.Review, error) {
+func (s *ReviewService) UpdateReview(id domain.ReviewID, goals *string, summary *string) (*domain.Review, error) {
 	// Validate that at least one field is being updated
 	if goals == nil && summary == nil {
 		return nil, fmt.Errorf("at least one field (goals or summary) must be provided for update")

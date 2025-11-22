@@ -5,16 +5,14 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type BibliographyService struct {
 	bibRepo   domain.BibliographyRepository
-	classRepo domain.BibClassificationRepository
+	classRepo domain.ClassificationRepository
 }
 
-func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo domain.BibClassificationRepository) *BibliographyService {
+func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo domain.ClassificationRepository) *BibliographyService {
 	return &BibliographyService{
 		bibRepo:   bibRepo,
 		classRepo: classRepo,
@@ -92,7 +90,7 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 
 	// 3. Create Entity
 	bib := &domain.Bibliography{
-		ID:            uuid.New(),
+		ID:            domain.NewBibliographyID(),
 		BibIndex:      bibIndex,
 		Code:          code,
 		Type:          typeStr,
@@ -119,7 +117,7 @@ func (s *BibliographyService) FindByBibIndex(bibIndex string) (*domain.Bibliogra
 	return s.bibRepo.FindByBibIndex(bibIndex)
 }
 
-func (s *BibliographyService) AddClassification(codeNum int, name string) (*domain.BibClassification, error) {
+func (s *BibliographyService) AddClassification(codeNum int, name string) (*domain.Classification, error) {
 	// Validate name is not empty or whitespace
 	if strings.TrimSpace(name) == "" {
 		return nil, fmt.Errorf("classification name must not be empty")
@@ -138,8 +136,8 @@ func (s *BibliographyService) AddClassification(codeNum int, name string) (*doma
 		return nil, fmt.Errorf("classification with code %d already exists", codeNum)
 	}
 
-	class := &domain.BibClassification{
-		ID:      uuid.New(),
+	class := &domain.Classification{
+		ID:      domain.NewClassificationID(),
 		CodeNum: codeNum,
 		Name:    name,
 	}

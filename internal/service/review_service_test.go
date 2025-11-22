@@ -5,18 +5,16 @@ import (
 	"fmt"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // MockReviewRepository for testing
 type MockReviewRepository struct {
-	Reviews map[uuid.UUID]*domain.Review
+	Reviews map[domain.ReviewID]*domain.Review
 }
 
 func (m *MockReviewRepository) Save(review *domain.Review) error {
 	if m.Reviews == nil {
-		m.Reviews = make(map[uuid.UUID]*domain.Review)
+		m.Reviews = make(map[domain.ReviewID]*domain.Review)
 	}
 	m.Reviews[review.ID] = review
 	return nil
@@ -30,14 +28,14 @@ func (m *MockReviewRepository) FindAll() ([]*domain.Review, error) {
 	return reviews, nil
 }
 
-func (m *MockReviewRepository) FindByID(id uuid.UUID) (*domain.Review, error) {
+func (m *MockReviewRepository) FindByID(id domain.ReviewID) (*domain.Review, error) {
 	if m.Reviews == nil {
 		return nil, nil
 	}
 	return m.Reviews[id], nil
 }
 
-func (m *MockReviewRepository) FindByBookID(bookID uuid.UUID) ([]*domain.Review, error) {
+func (m *MockReviewRepository) FindByBookID(bookID domain.BibliographyID) ([]*domain.Review, error) {
 	var reviews []*domain.Review
 	for _, r := range m.Reviews {
 		if r.BookID == bookID {
@@ -51,11 +49,11 @@ func TestAddReview_Success(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{}
 	bibRepo := &MockBibliographyRepository{
-		Bibliographies: map[uuid.UUID]*domain.Bibliography{},
+		Bibliographies: map[domain.BibliographyID]*domain.Bibliography{},
 	}
 
 	// Add a dummy bibliography
-	bookID := uuid.New()
+	bookID := domain.NewBibliographyID()
 	bibRepo.Bibliographies[bookID] = &domain.Bibliography{
 		ID:    bookID,
 		Title: "Test Book",
@@ -89,7 +87,7 @@ func TestAddReview_EmptyGoals(t *testing.T) {
 	svc := NewReviewService(reviewRepo, bibRepo)
 
 	// Test
-	_, err := svc.AddReview(uuid.New(), "", "Summary")
+	_, err := svc.AddReview(domain.NewBibliographyID(), "", "Summary")
 
 	// Assertions
 	if err == nil {
@@ -107,7 +105,7 @@ func TestAddReview_WhitespaceGoals(t *testing.T) {
 	svc := NewReviewService(reviewRepo, bibRepo)
 
 	// Test Case with whitespace-only goals
-	_, err := svc.AddReview(uuid.New(), "   ", "Summary")
+	_, err := svc.AddReview(domain.NewBibliographyID(), "   ", "Summary")
 
 	// Assertions
 	if err == nil {
@@ -122,12 +120,12 @@ func TestAddReview_BookNotFound(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{}
 	bibRepo := &MockBibliographyRepository{
-		Bibliographies: map[uuid.UUID]*domain.Bibliography{},
+		Bibliographies: map[domain.BibliographyID]*domain.Bibliography{},
 	}
 	svc := NewReviewService(reviewRepo, bibRepo)
 
 	// Test
-	nonExistentID := uuid.New()
+	nonExistentID := domain.NewBibliographyID()
 	_, err := svc.AddReview(nonExistentID, "Goals", "Summary")
 
 	// Assertions
@@ -143,13 +141,13 @@ func TestAddReview_BookNotFound(t *testing.T) {
 func TestUpdateReview_Success(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{
-		Reviews: make(map[uuid.UUID]*domain.Review),
+		Reviews: make(map[domain.ReviewID]*domain.Review),
 	}
 	bibRepo := &MockBibliographyRepository{}
 
 	// Create an initial review
-	reviewID := uuid.New()
-	bookID := uuid.New()
+	reviewID := domain.NewReviewID()
+	bookID := domain.NewBibliographyID()
 	initialReview := &domain.Review{
 		ID:        reviewID,
 		BookID:    bookID,
@@ -189,14 +187,14 @@ func TestUpdateReview_Success(t *testing.T) {
 func TestUpdateReview_OnlyGoals(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{
-		Reviews: make(map[uuid.UUID]*domain.Review),
+		Reviews: make(map[domain.ReviewID]*domain.Review),
 	}
 	bibRepo := &MockBibliographyRepository{}
 
-	reviewID := uuid.New()
+	reviewID := domain.NewReviewID()
 	initialReview := &domain.Review{
 		ID:      reviewID,
-		BookID:  uuid.New(),
+		BookID:  domain.NewBibliographyID(),
 		Goals:   "Initial goals",
 		Summary: "Initial summary",
 	}
@@ -223,14 +221,14 @@ func TestUpdateReview_OnlyGoals(t *testing.T) {
 func TestUpdateReview_OnlySummary(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{
-		Reviews: make(map[uuid.UUID]*domain.Review),
+		Reviews: make(map[domain.ReviewID]*domain.Review),
 	}
 	bibRepo := &MockBibliographyRepository{}
 
-	reviewID := uuid.New()
+	reviewID := domain.NewReviewID()
 	initialReview := &domain.Review{
 		ID:      reviewID,
-		BookID:  uuid.New(),
+		BookID:  domain.NewBibliographyID(),
 		Goals:   "Initial goals",
 		Summary: "Initial summary",
 	}
@@ -257,13 +255,13 @@ func TestUpdateReview_OnlySummary(t *testing.T) {
 func TestUpdateReview_NotFound(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{
-		Reviews: make(map[uuid.UUID]*domain.Review),
+		Reviews: make(map[domain.ReviewID]*domain.Review),
 	}
 	bibRepo := &MockBibliographyRepository{}
 	svc := NewReviewService(reviewRepo, bibRepo)
 
 	// Test updating non-existent review
-	nonExistentID := uuid.New()
+	nonExistentID := domain.NewReviewID()
 	newGoals := "Some goals"
 	_, err := svc.UpdateReview(nonExistentID, &newGoals, nil)
 
@@ -284,7 +282,7 @@ func TestUpdateReview_NoFieldsProvided(t *testing.T) {
 	svc := NewReviewService(reviewRepo, bibRepo)
 
 	// Test updating without providing any fields
-	_, err := svc.UpdateReview(uuid.New(), nil, nil)
+	_, err := svc.UpdateReview(domain.NewReviewID(), nil, nil)
 
 	// Assertions
 	if err == nil {
@@ -298,14 +296,14 @@ func TestUpdateReview_NoFieldsProvided(t *testing.T) {
 func TestUpdateReview_EmptyGoals(t *testing.T) {
 	// Setup
 	reviewRepo := &MockReviewRepository{
-		Reviews: make(map[uuid.UUID]*domain.Review),
+		Reviews: make(map[domain.ReviewID]*domain.Review),
 	}
 	bibRepo := &MockBibliographyRepository{}
 
-	reviewID := uuid.New()
+	reviewID := domain.NewReviewID()
 	initialReview := &domain.Review{
 		ID:      reviewID,
-		BookID:  uuid.New(),
+		BookID:  domain.NewBibliographyID(),
 		Goals:   "Initial goals",
 		Summary: "Initial summary",
 	}

@@ -2,11 +2,63 @@ package infrastructure
 
 import (
 	"bibliography_log/internal/domain"
+	"fmt"
 	"log/slog"
 	"time"
-
-	"github.com/google/uuid"
 )
+
+// BibliographyRecord represents a bibliography record for CSV persistence.
+type BibliographyRecord struct {
+	ID            string
+	BibIndex      string
+	Code          string
+	Type          string
+	Title         string
+	Author        string
+	ISBN          string
+	Description   string
+	PublishedDate string
+}
+
+// recordToBibliography converts a BibliographyRecord to a domain.Bibliography.
+func recordToBibliography(rec *BibliographyRecord) (*domain.Bibliography, error) {
+	id, err := domain.ParseBibliographyID(rec.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse bibliography ID: %w", err)
+	}
+
+	pubDate, err := time.Parse(time.RFC3339, rec.PublishedDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse published date: %w", err)
+	}
+
+	return &domain.Bibliography{
+		ID:            id,
+		BibIndex:      rec.BibIndex,
+		Code:          rec.Code,
+		Type:          rec.Type,
+		Title:         rec.Title,
+		Author:        rec.Author,
+		ISBN:          rec.ISBN,
+		Description:   rec.Description,
+		PublishedDate: pubDate,
+	}, nil
+}
+
+// bibliographyToRecord converts a domain.Bibliography to a BibliographyRecord.
+func bibliographyToRecord(bib *domain.Bibliography) *BibliographyRecord {
+	return &BibliographyRecord{
+		ID:            bib.ID.String(),
+		BibIndex:      bib.BibIndex,
+		Code:          bib.Code,
+		Type:          bib.Type,
+		Title:         bib.Title,
+		Author:        bib.Author,
+		ISBN:          bib.ISBN,
+		Description:   bib.Description,
+		PublishedDate: bib.PublishedDate.Format(time.RFC3339),
+	}
+}
 
 // CSVBibliographyRepository implements domain.BibliographyRepository using a CSV file.
 type CSVBibliographyRepository struct {
@@ -58,19 +110,9 @@ func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 		if len(record) < 9 {
 			continue
 		}
-		id, err := uuid.Parse(record[0])
-		if err != nil {
-			slog.Error("Failed to parse published date", "err", err)
-			continue
-		}
-		pubDate, err := time.Parse(time.RFC3339, record[8])
-		if err != nil {
-			slog.Error("Failed to parse published date", "err", err)
-			continue
-		}
 
-		bibliographies = append(bibliographies, &domain.Bibliography{
-			ID:            id,
+		bibRecord := &BibliographyRecord{
+			ID:            record[0],
 			BibIndex:      record[1],
 			Code:          record[2],
 			Type:          record[3],
@@ -78,8 +120,16 @@ func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 			Author:        record[5],
 			ISBN:          record[6],
 			Description:   record[7],
-			PublishedDate: pubDate,
-		})
+			PublishedDate: record[8],
+		}
+
+		bib, err := recordToBibliography(bibRecord)
+		if err != nil {
+			slog.Error("Failed to convert bibliography record", "err", err)
+			continue
+		}
+
+		bibliographies = append(bibliographies, bib)
 	}
 	return bibliographies, nil
 }
@@ -103,7 +153,7 @@ func (r *CSVBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bib
 // FindByID implements domain.BibliographyRepository.FindByID
 // Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
 // For large datasets, consider implementing caching or using a database for production use.
-func (r *CSVBibliographyRepository) FindByID(id uuid.UUID) (*domain.Bibliography, error) {
+func (r *CSVBibliographyRepository) FindByID(id domain.BibliographyID) (*domain.Bibliography, error) {
 	all, err := r.FindAll()
 	if err != nil {
 		return nil, err
@@ -122,16 +172,17 @@ func (r *CSVBibliographyRepository) writeAll(bibliographies []*domain.Bibliograp
 	records = append(records, []string{"ID", "BibIndex", "Code", "Type", "Title", "Author", "ISBN", "Description", "PublishedDate"})
 
 	for _, b := range bibliographies {
+		rec := bibliographyToRecord(b)
 		record := []string{
-			b.ID.String(),
-			b.BibIndex,
-			b.Code,
-			b.Type,
-			b.Title,
-			b.Author,
-			b.ISBN,
-			b.Description,
-			b.PublishedDate.Format(time.RFC3339),
+			rec.ID,
+			rec.BibIndex,
+			rec.Code,
+			rec.Type,
+			rec.Title,
+			rec.Author,
+			rec.ISBN,
+			rec.Description,
+			rec.PublishedDate,
 		}
 		records = append(records, record)
 	}

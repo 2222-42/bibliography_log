@@ -25,7 +25,7 @@ func NewApp() (*App, error) {
 
 	// Initialize Repositories
 	bibRepo := infrastructure.NewCSVBibliographyRepository(dataDir + "/bibliographies.csv")
-	classRepo := infrastructure.NewCSVBibClassificationRepository(dataDir + "/classifications.csv")
+	classRepo := infrastructure.NewCSVClassificationRepository(dataDir + "/classifications.csv")
 	reviewRepo := infrastructure.NewCSVReviewRepository(dataDir + "/reviews.csv")
 
 	// Initialize Service
