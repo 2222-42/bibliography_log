@@ -1,47 +1,25 @@
 {
-  "formatters": {
-    "enable": [
-      "gofmt",
-      "goimports"
-    ],
-    "exclusions": {
-      "generated": "lax",
-      "paths": [
-        "third_party$",
-        "builtin$",
-        "examples$"
-      ]
-    },
-    "settings": {
-      "goimports": {
-        "local-prefixes": [
-          "bibliography_log"
-        ]
-      }
-    }
-  },
-  "linters": {
-    "enable": [
-      "misspell",
-      "revive"
-    ],
-    "exclusions": {
-      "generated": "lax",
-      "paths": [
-        "third_party$",
-        "builtin$",
-        "examples$"
-      ],
-      "presets": [
-        "comments",
-        "common-false-positives",
-        "legacy",
-        "std-error-handling"
-      ]
-    }
-  },
   "run": {
     "modules-download-mode": "readonly"
   },
-  "version": "2"
+  "linters": {
+    "enable": [
+      "gofmt",
+      "goimports",
+      "misspell",
+      "revive"
+    ]
+  },
+  "linters-settings": {
+    "goimports": {
+      "local-prefixes": "bibliography_log"
+    }
+  },
+  "issues": {
+    "exclude-dirs": [
+      "third_party",
+      "builtin",
+      "examples"
+    ]
+  }
 }

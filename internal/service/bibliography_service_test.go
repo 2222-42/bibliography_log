@@ -39,7 +39,7 @@ func (m *MockBibliographyRepository) FindByID(id uuid.UUID) (*domain.Bibliograph
 	return m.Bibliographies[id], nil
 }
 
-func (m *MockBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {
+func (m *MockBibliographyRepository) FindByBibIndex(_ string) (*domain.Bibliography, error) {
 	return nil, nil
 }
 

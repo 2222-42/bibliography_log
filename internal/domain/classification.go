@@ -8,4 +8,3 @@ type BibClassification struct {
 	CodeNum int    // e.g., 56
 	Name    string // e.g., "Technology"
 }
-
