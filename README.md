@@ -170,6 +170,40 @@ go run cmd/biblog/*.go add-review \
 Review added: &{... Goals:Understand DDD core concepts ...}
 ```
 
+### 7. Update Review
+
+Update an existing review's goals and/or summary. At least one field must be provided.
+
+**Command:**
+```bash
+go run cmd/biblog/*.go update-review \
+  -review-id "<review-uuid>" \
+  -goals "<new-goals>" \
+  -summary "<new-summary>"
+```
+
+**Example - Update both fields:**
+```bash
+go run cmd/biblog/*.go update-review \
+  -review-id "2d8a26ef-64e4-4718-b913-085fef527d71" \
+  -goals "Refined understanding of DDD patterns" \
+  -summary "Comprehensive guide covering strategic and tactical design."
+```
+
+**Example - Update only summary:**
+```bash
+go run cmd/biblog/*.go update-review \
+  -review-id "2d8a26ef-64e4-4718-b913-085fef527d71" \
+  -summary "After reading: Excellent introduction with practical examples."
+```
+
+**Output:**
+```
+Review updated: &{... Goals:Refined understanding of DDD patterns Summary:Comprehensive guide covering strategic and tactical design. UpdatedAt:2025-11-23T04:45:00+09:00}
+```
+
+> **Note:** You can find the review UUID from the `data/reviews.csv` file. At least one of `-goals` or `-summary` must be provided. The `UpdatedAt` timestamp is automatically updated.
+
 ## Testing
 
 To run the automated tests:

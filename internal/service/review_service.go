@@ -57,3 +57,46 @@ func (s *ReviewService) AddReview(bookID uuid.UUID, goals string, summary string
 
 	return review, nil
 }
+
+// UpdateReview updates an existing review's goals and/or summary.
+// At least one of goals or summary must be provided (non-nil pointer).
+// If a field is nil, it will not be updated (preserves existing value).
+// If a field is an empty string, it will be set to empty (clears the field).
+func (s *ReviewService) UpdateReview(id uuid.UUID, goals *string, summary *string) (*domain.Review, error) {
+	// Validate that at least one field is being updated
+	if goals == nil && summary == nil {
+		return nil, fmt.Errorf("at least one field (goals or summary) must be provided for update")
+	}
+
+	// Retrieve existing review
+	review, err := s.reviewRepo.FindByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find review: %w", err)
+	}
+	if review == nil {
+		return nil, fmt.Errorf("review with ID %s not found", id)
+	}
+
+	// Update fields if provided
+	if goals != nil {
+		// Validate goals if being updated (same validation as AddReview)
+		if strings.TrimSpace(*goals) == "" {
+			return nil, fmt.Errorf("goals cannot be empty or whitespace-only")
+		}
+		review.Goals = *goals
+	}
+	if summary != nil {
+		// Summary can be empty, so no validation needed
+		review.Summary = *summary
+	}
+
+	// Update timestamp
+	review.UpdatedAt = time.Now()
+
+	// Save the updated review
+	if err := s.reviewRepo.Save(review); err != nil {
+		return nil, fmt.Errorf("failed to update review: %w", err)
+	}
+
+	return review, nil
+}

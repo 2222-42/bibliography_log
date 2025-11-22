@@ -21,5 +21,6 @@ type BibClassificationRepository interface {
 type ReviewRepository interface {
 	Save(review *Review) error
 	FindAll() ([]*Review, error)
+	FindByID(id uuid.UUID) (*Review, error)
 	FindByBookID(bookID uuid.UUID) ([]*Review, error)
 }

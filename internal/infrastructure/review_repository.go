@@ -83,6 +83,19 @@ func (r *CSVReviewRepository) FindAll() ([]*domain.Review, error) {
 	return reviews, nil
 }
 
+func (r *CSVReviewRepository) FindByID(id uuid.UUID) (*domain.Review, error) {
+	all, err := r.FindAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, review := range all {
+		if review.ID == id {
+			return review, nil
+		}
+	}
+	return nil, nil
+}
+
 func (r *CSVReviewRepository) FindByBookID(bookID uuid.UUID) ([]*domain.Review, error) {
 	all, err := r.FindAll()
 	if err != nil {
