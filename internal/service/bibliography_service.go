@@ -19,10 +19,11 @@ func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo dom
 	}
 }
 
-func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time, titleEn, authorEn, manualBibIndex string) (*domain.Bibliography, error) {
+func (s *BibliographyService) AddBibliography(title, author, publisher, isbn, typeStr string, classCodeNum int, publishedDate time.Time, titleEn, authorEn, manualBibIndex string) (*domain.Bibliography, error) {
 	// Normalize inputs by trimming whitespace
 	title = strings.TrimSpace(title)
 	author = strings.TrimSpace(author)
+	publisher = strings.TrimSpace(publisher)
 	typeStr = strings.TrimSpace(typeStr)
 	titleEn = strings.TrimSpace(titleEn)
 	authorEn = strings.TrimSpace(authorEn)
@@ -96,8 +97,8 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 		Type:          typeStr,
 		Title:         title,
 		Author:        author,
+		Publisher:     publisher,
 		ISBN:          isbn,
-		Description:   description,
 		PublishedDate: publishedDate,
 	}
 

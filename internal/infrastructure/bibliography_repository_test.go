@@ -32,8 +32,8 @@ func TestCSVBibliographyRepository_SaveAndFind(t *testing.T) {
 		Type:          "Book",
 		Title:         "Test Book",
 		Author:        "Test Author",
+		Publisher:     "Test Publisher",
 		ISBN:          "1234567890",
-		Description:   "Test Description",
 		PublishedDate: time.Now().Truncate(time.Second), // Truncate to match CSV precision if needed, though RFC3339 handles it well.
 	}
 
