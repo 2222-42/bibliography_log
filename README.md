@@ -6,7 +6,7 @@ The system is built using Go and follows Domain-Driven Design (DDD) principles.
 
 ## Prerequisites
 
-- Go 1.23 or later
+- Go 1.25.3 or later
 
 ## Setup
 
