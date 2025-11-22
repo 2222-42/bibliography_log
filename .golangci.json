@@ -1,17 +1,10 @@
 {
+  "version": "2",
   "formatters": {
     "enable": [
       "gofmt",
       "goimports"
     ],
-    "exclusions": {
-      "generated": "lax",
-      "paths": [
-        "third_party$",
-        "builtin$",
-        "examples$"
-      ]
-    },
     "settings": {
       "goimports": {
         "local-prefixes": [
@@ -24,24 +17,10 @@
     "enable": [
       "misspell",
       "revive"
-    ],
-    "exclusions": {
-      "generated": "lax",
-      "paths": [
-        "third_party$",
-        "builtin$",
-        "examples$"
-      ],
-      "presets": [
-        "comments",
-        "common-false-positives",
-        "legacy",
-        "std-error-handling"
-      ]
-    }
+    ]
   },
   "run": {
-    "modules-download-mode": "readonly"
-  },
-  "version": "2"
+    "modules-download-mode": "readonly",
+    "timeout": "5m"
+  }
 }
