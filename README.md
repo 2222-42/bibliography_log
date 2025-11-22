@@ -143,7 +143,28 @@ Bibliography added: &{... BibIndex:CUSTOM123 ...}
 
 ### 6. Add Review
 
-Not implemented yet.
+Add a review for an existing bibliography.
+
+**Command:**
+```bash
+go run cmd/biblog/*.go add-review \
+  -bib-index "<bib_index>" \
+  -goals "<goals>" \
+  -summary "<summary>"
+```
+
+**Example:**
+```bash
+go run cmd/biblog/*.go add-review \
+  -bib-index "B56EE03DDD" \
+  -goals "Understand DDD core concepts" \
+  -summary "Excellent introduction to the domain layer."
+```
+
+**Output:**
+```
+Review added: &{... Goals:Understand DDD core concepts ...}
+```
 
 ## Testing
 
