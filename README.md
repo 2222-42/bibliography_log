@@ -127,3 +127,21 @@ go test ./internal/...
 The data is stored in CSV files in the `data/` directory:
 - `data/bibliographies.csv`: Stores bibliography entries.
 - `data/classifications.csv`: Stores classification codes.
+
+## Performance Limitations
+
+> **Note:** This system uses CSV files for data storage, which is suitable for small to medium datasets (hundreds to low thousands of entries) but has performance limitations for larger datasets.
+
+**Known Limitations:**
+
+- **Full File Reads:** Methods like `FindByBibIndex()` call `FindAll()`, which reads and parses the entire CSV file on every query. This is inefficient for large datasets.
+- **No Indexing:** CSV files don't support indexing, so all searches are O(n) linear scans.
+- **Concurrent Access:** The current implementation has potential race conditions when multiple processes access the same CSV file simultaneously (acceptable for single-user CLI usage).
+
+**Recommendations for Production Use:**
+
+- For datasets with **< 1,000 entries**: Current CSV implementation is acceptable
+- For datasets with **1,000-10,000 entries**: Consider implementing in-memory caching
+- For datasets with **> 10,000 entries**: Migrate to a proper database (SQLite, PostgreSQL, etc.)
+
+The CSV-based approach was chosen for simplicity, portability, and ease of inspection/editing. It's ideal for personal knowledge management and learning DDD principles without database setup overhead.

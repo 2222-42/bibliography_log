@@ -17,6 +17,10 @@ func NewCSVBibliographyRepository(filePath string) *CSVBibliographyRepository {
 	return &CSVBibliographyRepository{FilePath: filePath}
 }
 
+// Save implements domain.BibliographyRepository.Save
+// Potential race condition: This method reads all records, modifies them, and writes them back
+// without any locking mechanism. Acceptable for single-user CLI usage, but consider file locking
+// or using a database with proper transaction support for production use.
 func (r *CSVBibliographyRepository) Save(b *domain.Bibliography) error {
 	all, err := r.FindAll()
 	if err != nil {
@@ -80,6 +84,9 @@ func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 	return bibliographies, nil
 }
 
+// FindByBibIndex implements domain.BibliographyRepository.FindByBibIndex
+// Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
+// For large datasets, consider implementing caching or using a database for production use.
 func (r *CSVBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {
 	all, err := r.FindAll()
 	if err != nil {

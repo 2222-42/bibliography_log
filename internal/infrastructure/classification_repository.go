@@ -16,6 +16,10 @@ func NewCSVBibClassificationRepository(filePath string) *CSVBibClassificationRep
 	return &CSVBibClassificationRepository{FilePath: filePath}
 }
 
+// Save implements domain.BibClassificationRepository.Save
+// Potential race condition: This method reads all records, modifies them, and writes them back
+// without any locking mechanism. Acceptable for single-user CLI usage, but consider file locking
+// or using a database with proper transaction support for production use.
 func (r *CSVBibClassificationRepository) Save(c *domain.BibClassification) error {
 	all, err := r.FindAll()
 	if err != nil {
@@ -52,8 +56,14 @@ func (r *CSVBibClassificationRepository) FindAll() ([]*domain.BibClassification,
 		if len(record) < 3 {
 			continue
 		}
-		id, _ := uuid.Parse(record[0])
-		codeNum, _ := strconv.Atoi(record[1])
+		id, err := uuid.Parse(record[0])
+		if err != nil {
+			continue // Skip records with invalid UUIDs
+		}
+		codeNum, err := strconv.Atoi(record[1])
+		if err != nil {
+			continue // Skip records with invalid code numbers
+		}
 
 		classifications = append(classifications, &domain.BibClassification{
 			ID:      id,

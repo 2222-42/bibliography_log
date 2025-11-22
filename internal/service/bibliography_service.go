@@ -23,22 +23,29 @@ func NewBibliographyService(bibRepo domain.BibliographyRepository, classRepo dom
 }
 
 func (s *BibliographyService) AddBibliography(title, author, isbn, description, typeStr string, classCodeNum int, publishedDate time.Time, titleEn, authorEn string) (*domain.Bibliography, error) {
+	// Normalize inputs by trimming whitespace
+	title = strings.TrimSpace(title)
+	author = strings.TrimSpace(author)
+	typeStr = strings.TrimSpace(typeStr)
+	titleEn = strings.TrimSpace(titleEn)
+	authorEn = strings.TrimSpace(authorEn)
+
 	// Input validation for required fields
-	if strings.TrimSpace(title) == "" {
+	if title == "" {
 		return nil, fmt.Errorf("title is required and cannot be empty")
 	}
-	if strings.TrimSpace(author) == "" {
+	if author == "" {
 		return nil, fmt.Errorf("author is required and cannot be empty")
 	}
-	if strings.TrimSpace(typeStr) == "" {
+	if typeStr == "" {
 		return nil, fmt.Errorf("type is required and cannot be empty")
 	}
 
 	// Check for Japanese text and require English translations
-	if containsJapanese(title) && strings.TrimSpace(titleEn) == "" {
+	if containsJapanese(title) && titleEn == "" {
 		return nil, fmt.Errorf("title contains Japanese characters; please provide English translation via -title-en flag")
 	}
-	if containsJapanese(author) && strings.TrimSpace(authorEn) == "" {
+	if containsJapanese(author) && authorEn == "" {
 		return nil, fmt.Errorf("author contains Japanese characters; please provide English translation via -author-en flag")
 	}
 
@@ -61,11 +68,11 @@ func (s *BibliographyService) AddBibliography(title, author, isbn, description, 
 
 	// Use English versions for BibIndex generation if provided, otherwise use original
 	authorForIndex := author
-	if strings.TrimSpace(authorEn) != "" {
+	if authorEn != "" {
 		authorForIndex = authorEn
 	}
 	titleForIndex := title
-	if strings.TrimSpace(titleEn) != "" {
+	if titleEn != "" {
 		titleForIndex = titleEn
 	}
 
@@ -104,6 +111,10 @@ func (s *BibliographyService) AddClassification(codeNum int, name string) (*doma
 	// Validate name is not empty or whitespace
 	if strings.TrimSpace(name) == "" {
 		return nil, fmt.Errorf("classification name must not be empty")
+	}
+
+	if codeNum < 0 || codeNum >= 100000 {
+		return nil, fmt.Errorf("classification code number must be between 0 and 999999")
 	}
 
 	// Check if classification already exists

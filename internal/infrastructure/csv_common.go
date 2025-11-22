@@ -32,5 +32,9 @@ func WriteCSV(filePath string, records [][]string) error {
 
 	writer := csv.NewWriter(file)
 
-	return writer.WriteAll(records)
+	if err := writer.WriteAll(records); err != nil {
+		return err
+	}
+	writer.Flush()
+	return writer.Error()
 }

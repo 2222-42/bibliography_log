@@ -54,10 +54,22 @@ func (r *CSVReviewRepository) FindAll() ([]*domain.Review, error) {
 		if len(record) < 6 {
 			continue
 		}
-		id, _ := uuid.Parse(record[0])
-		bookID, _ := uuid.Parse(record[1])
-		createdAt, _ := time.Parse(time.RFC3339, record[4])
-		updatedAt, _ := time.Parse(time.RFC3339, record[5])
+		id, err := uuid.Parse(record[0])
+		if err != nil {
+			continue // Skip records with invalid UUIDs
+		}
+		bookID, err := uuid.Parse(record[1])
+		if err != nil {
+			continue // Skip records with invalid book IDs
+		}
+		createdAt, err := time.Parse(time.RFC3339, record[4])
+		if err != nil {
+			continue // Skip records with invalid timestamps
+		}
+		updatedAt, err := time.Parse(time.RFC3339, record[5])
+		if err != nil {
+			continue // Skip records with invalid timestamps
+		}
 
 		reviews = append(reviews, &domain.Review{
 			ID:        id,
