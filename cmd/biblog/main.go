@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bibliography_log/internal/domain"
 	"flag"
 	"fmt"
 	"os"
-	"time"
 )
 
 func main() {
@@ -23,34 +21,39 @@ func main() {
 	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
 	// Add Class Flags
-	addClassCode := addClassCmd.Int("code", 0, "Classification Code Number (e.g. 56)")
-	addClassName := addClassCmd.String("name", "", "Classification Name (e.g. Technology)")
+	addClassReq := &AddClassificationRequest{}
+	addClassCmd.IntVar(&addClassReq.Code, "code", 0, "Classification Code Number (e.g. 56)")
+	addClassCmd.StringVar(&addClassReq.Name, "name", "", "Classification Name (e.g. Technology)")
 
 	// Add Bib Flags
-	addBibTitle := addBibCmd.String("title", "", "Title of the bibliography")
-	addBibAuthor := addBibCmd.String("author", "", "Author of the bibliography")
-	addBibPublisher := addBibCmd.String("publisher", "", "Publisher of the bibliography")
-	addBibType := addBibCmd.String("type", "", "Type (Book, Essay, Video, etc.)")
-	addBibClass := addBibCmd.Int("class", 0, "Classification Code Number")
-	addBibYear := addBibCmd.Int("year", 0, "Published Year (e.g. 2024)")
-	addBibISBN := addBibCmd.String("isbn", "", "ISBN")
-	addBibTitleEn := addBibCmd.String("title-en", "", "English translation of title (required if title contains Japanese)")
-	addBibAuthorEn := addBibCmd.String("author-en", "", "English translation of author (required if author contains Japanese)")
-	addBibIndex := addBibCmd.String("bib-index", "", "Manual BibIndex (overrides auto-generation and bypasses English translation requirements)")
+	addBibReq := &AddBibliographyRequest{}
+	addBibCmd.StringVar(&addBibReq.Title, "title", "", "Title of the bibliography")
+	addBibCmd.StringVar(&addBibReq.Author, "author", "", "Author of the bibliography")
+	addBibCmd.StringVar(&addBibReq.Publisher, "publisher", "", "Publisher of the bibliography")
+	addBibCmd.StringVar(&addBibReq.Type, "type", "", "Type (Book, Essay, Video, etc.)")
+	addBibCmd.IntVar(&addBibReq.ClassCode, "class", 0, "Classification Code Number")
+	addBibCmd.IntVar(&addBibReq.Year, "year", 0, "Published Year (e.g. 2024)")
+	addBibCmd.StringVar(&addBibReq.ISBN, "isbn", "", "ISBN")
+	addBibCmd.StringVar(&addBibReq.TitleEn, "title-en", "", "English translation of title (required if title contains Japanese)")
+	addBibCmd.StringVar(&addBibReq.AuthorEn, "author-en", "", "English translation of author (required if author contains Japanese)")
+	addBibCmd.StringVar(&addBibReq.BibIndex, "bib-index", "", "Manual BibIndex (overrides auto-generation and bypasses English translation requirements)")
 
 	// Add Review Flags
-	addReviewBibIndex := addReviewCmd.String("bib-index", "", "BibIndex of the bibliography to review")
-	addReviewGoals := addReviewCmd.String("goals", "", "Goals for reading (required)")
-	addReviewSummary := addReviewCmd.String("summary", "", "Summary of the review")
+	addReviewReq := &AddReviewRequest{}
+	addReviewCmd.StringVar(&addReviewReq.BibIndex, "bib-index", "", "BibIndex of the bibliography to review")
+	addReviewCmd.StringVar(&addReviewReq.Goals, "goals", "", "Goals for reading (required)")
+	addReviewCmd.StringVar(&addReviewReq.Summary, "summary", "", "Summary of the review")
 
 	// Update Review Flags
-	updateReviewID := updateReviewCmd.String("review-id", "", "UUID of the review to update (required)")
-	updateReviewGoals := updateReviewCmd.String("goals", "", "New goals for reading (optional)")
-	updateReviewSummary := updateReviewCmd.String("summary", "", "New summary of the review (optional)")
+	updateReviewReq := &UpdateReviewRequest{}
+	updateReviewCmd.StringVar(&updateReviewReq.ReviewIDStr, "review-id", "", "UUID of the review to update (required)")
+	updateReviewCmd.StringVar(&updateReviewReq.Goals, "goals", "", "New goals for reading (optional)")
+	updateReviewCmd.StringVar(&updateReviewReq.Summary, "summary", "", "New summary of the review (optional)")
 
 	// List Flags
-	listLimit := listCmd.Int("limit", 100, "Maximum number of items to display (default: 100, 0 for all)")
-	listOffset := listCmd.Int("offset", 0, "Number of items to skip (default: 0)")
+	listReq := &ListBibliographiesRequest{}
+	listCmd.IntVar(&listReq.Limit, "limit", 100, "Maximum number of items to display (default: 100, 0 for all)")
+	listCmd.IntVar(&listReq.Offset, "offset", 0, "Number of items to skip (default: 0)")
 
 	if len(os.Args) < 2 {
 		fmt.Println("expected 'add-class', 'add-bib', 'add-review', 'update-review' or 'list' subcommands")
@@ -60,12 +63,14 @@ func main() {
 	switch os.Args[1] {
 	case "add-class":
 		_ = addClassCmd.Parse(os.Args[2:])
-		if *addClassCode == 0 || *addClassName == "" {
-			fmt.Println("Please provide -code and -name")
+		addClassReq.PromptMissing()
+		if err := addClassReq.Validate(); err != nil {
+			fmt.Printf("Validation error: %v\n", err)
 			addClassCmd.PrintDefaults()
 			os.Exit(1)
 		}
-		class, err := app.BibService.AddClassification(*addClassCode, *addClassName)
+
+		class, err := app.BibService.AddClassification(addClassReq.Code, addClassReq.Name)
 		if err != nil {
 			fmt.Printf("Error adding classification: %v\n", err)
 			os.Exit(1)
@@ -74,36 +79,25 @@ func main() {
 
 	case "add-bib":
 		_ = addBibCmd.Parse(os.Args[2:])
-		if *addBibTitle == "" || *addBibAuthor == "" || *addBibType == "" || *addBibClass == 0 || *addBibYear == 0 {
-			if *addBibTitle == "" {
-				*addBibTitle = promptString("Title", true)
-			}
-			if *addBibAuthor == "" {
-				*addBibAuthor = promptString("Author", true)
-			}
-			if *addBibPublisher == "" {
-				*addBibPublisher = promptString("Publisher", false)
-			}
-			if *addBibType == "" {
-				*addBibType = promptString("Type", true)
-			}
-			if *addBibClass == 0 {
-				*addBibClass = promptInt("Classification Code Number", true)
-			}
-			if *addBibYear == 0 {
-				*addBibYear = promptInt("Published Year", true)
-			}
-			if *addBibISBN == "" {
-				*addBibISBN = promptString("ISBN", false)
-			}
-			if *addBibIndex == "" {
-				*addBibIndex = promptString("BibIndex", false)
-			}
+		addBibReq.PromptMissing()
+		if err := addBibReq.Validate(); err != nil {
+			fmt.Printf("Validation error: %v\n", err)
+			addBibCmd.PrintDefaults()
+			os.Exit(1)
 		}
-		// Construct date from year
-		publishedDate := time.Date(*addBibYear, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		bib, err := app.BibService.AddBibliography(*addBibTitle, *addBibAuthor, *addBibPublisher, *addBibISBN, *addBibType, *addBibClass, publishedDate, *addBibTitleEn, *addBibAuthorEn, *addBibIndex)
+		bib, err := app.BibService.AddBibliography(
+			addBibReq.Title,
+			addBibReq.Author,
+			addBibReq.Publisher,
+			addBibReq.ISBN,
+			addBibReq.Type,
+			addBibReq.ClassCode,
+			addBibReq.ToPublishedDate(),
+			addBibReq.TitleEn,
+			addBibReq.AuthorEn,
+			addBibReq.BibIndex,
+		)
 		if err != nil {
 			fmt.Printf("Error adding bibliography: %v\n", err)
 			os.Exit(1)
@@ -112,30 +106,25 @@ func main() {
 
 	case "add-review":
 		_ = addReviewCmd.Parse(os.Args[2:])
-		if *addReviewBibIndex == "" || *addReviewGoals == "" {
-			if *addReviewBibIndex == "" {
-				*addReviewBibIndex = promptString("BibIndex", true)
-			}
-			if *addReviewGoals == "" {
-				*addReviewGoals = promptString("Goals", true)
-			}
-			if *addReviewSummary == "" {
-				*addReviewSummary = promptString("Summary", false)
-			}
+		addReviewReq.PromptMissing()
+		if err := addReviewReq.Validate(); err != nil {
+			fmt.Printf("Validation error: %v\n", err)
+			addReviewCmd.PrintDefaults()
+			os.Exit(1)
 		}
 
 		// Resolve BibIndex to ID efficiently
-		bib, err := app.BibService.FindByBibIndex(*addReviewBibIndex)
+		bib, err := app.BibService.FindByBibIndex(addReviewReq.BibIndex)
 		if err != nil {
-			fmt.Printf("Error finding bibliography with BibIndex %s: %v\n", *addReviewBibIndex, err)
+			fmt.Printf("Error finding bibliography with BibIndex %s: %v\n", addReviewReq.BibIndex, err)
 			os.Exit(1)
 		}
 		if bib == nil {
-			fmt.Printf("Bibliography with BibIndex %s not found\n", *addReviewBibIndex)
+			fmt.Printf("Bibliography with BibIndex %s not found\n", addReviewReq.BibIndex)
 			os.Exit(1)
 		}
 
-		review, err := app.ReviewService.AddReview(bib.ID, *addReviewGoals, *addReviewSummary)
+		review, err := app.ReviewService.AddReview(bib.ID, addReviewReq.Goals, addReviewReq.Summary)
 		if err != nil {
 			fmt.Printf("Error adding review: %v\n", err)
 			os.Exit(1)
@@ -144,21 +133,15 @@ func main() {
 
 	case "update-review":
 		_ = updateReviewCmd.Parse(os.Args[2:])
-		if *updateReviewID == "" {
-			*updateReviewID = promptString("Review UUID", true)
-		}
-		if *updateReviewGoals == "" && *updateReviewSummary == "" {
-			// If neither is provided via flags, prompt for them
-			if *updateReviewGoals == "" {
-				*updateReviewGoals = promptString("New goals", false)
-			}
-			if *updateReviewSummary == "" {
-				*updateReviewSummary = promptString("New summary", false)
-			}
+		updateReviewReq.PromptMissing()
+		if err := updateReviewReq.Validate(); err != nil {
+			fmt.Printf("Validation error: %v\n", err)
+			updateReviewCmd.PrintDefaults()
+			os.Exit(1)
 		}
 
 		// Parse UUID
-		reviewID, err := domain.ParseReviewID(*updateReviewID)
+		reviewID, err := updateReviewReq.ParseID()
 		if err != nil {
 			fmt.Printf("Invalid review ID format: %v\n", err)
 			os.Exit(1)
@@ -167,18 +150,11 @@ func main() {
 		// Prepare optional fields
 		var goals *string
 		var summary *string
-		if *updateReviewGoals != "" {
-			goals = updateReviewGoals
+		if updateReviewReq.Goals != "" {
+			goals = &updateReviewReq.Goals
 		}
-		if *updateReviewSummary != "" {
-			summary = updateReviewSummary
-		}
-
-		// Validate at least one field is provided (after prompting)
-		if goals == nil && summary == nil {
-			fmt.Println("Please provide at least one field to update: -goals or -summary")
-			// If interactive mode was used, they might have skipped both optional fields
-			os.Exit(1)
+		if updateReviewReq.Summary != "" {
+			summary = &updateReviewReq.Summary
 		}
 
 		review, err := app.ReviewService.UpdateReview(reviewID, goals, summary)
@@ -190,8 +166,13 @@ func main() {
 
 	case "list":
 		_ = listCmd.Parse(os.Args[2:])
-		// Use user-specified limit and offset, or defaults
-		bibs, err := app.BibService.ListBibliographies(*listLimit, *listOffset)
+		if err := listReq.Validate(); err != nil {
+			fmt.Printf("Validation error: %v\n", err)
+			listCmd.PrintDefaults()
+			os.Exit(1)
+		}
+
+		bibs, err := app.BibService.ListBibliographies(listReq.Limit, listReq.Offset)
 		if err != nil {
 			fmt.Printf("Error listing bibliographies: %v\n", err)
 			os.Exit(1)
@@ -200,7 +181,7 @@ func main() {
 		for _, b := range bibs {
 			fmt.Printf("[%s] %s by %s (BibIndex: %s)\n", b.Type, b.Title, b.Author, b.BibIndex)
 		}
-		if len(bibs) == *listLimit && *listLimit > 0 {
+		if len(bibs) == listReq.Limit && listReq.Limit > 0 {
 			fmt.Printf("\nShowing %d items (use --limit and --offset to see more)\n", len(bibs))
 		}
 
