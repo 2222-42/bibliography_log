@@ -48,6 +48,10 @@ func main() {
 	updateReviewGoals := updateReviewCmd.String("goals", "", "New goals for reading (optional)")
 	updateReviewSummary := updateReviewCmd.String("summary", "", "New summary of the review (optional)")
 
+	// List Flags
+	listLimit := listCmd.Int("limit", 100, "Maximum number of items to display (default: 100, 0 for all)")
+	listOffset := listCmd.Int("offset", 0, "Number of items to skip (default: 0)")
+
 	if len(os.Args) < 2 {
 		fmt.Println("expected 'add-class', 'add-bib', 'add-review', 'update-review' or 'list' subcommands")
 		os.Exit(1)
@@ -186,8 +190,8 @@ func main() {
 
 	case "list":
 		_ = listCmd.Parse(os.Args[2:])
-		// Default pagination: limit 100, offset 0
-		bibs, err := app.BibService.ListBibliographies(100, 0)
+		// Use user-specified limit and offset, or defaults
+		bibs, err := app.BibService.ListBibliographies(*listLimit, *listOffset)
 		if err != nil {
 			fmt.Printf("Error listing bibliographies: %v\n", err)
 			os.Exit(1)
@@ -195,6 +199,9 @@ func main() {
 		fmt.Println("Bibliographies:")
 		for _, b := range bibs {
 			fmt.Printf("[%s] %s by %s (BibIndex: %s)\n", b.Type, b.Title, b.Author, b.BibIndex)
+		}
+		if len(bibs) == *listLimit && *listLimit > 0 {
+			fmt.Printf("\nShowing %d items (use --limit and --offset to see more)\n", len(bibs))
 		}
 
 	default:
