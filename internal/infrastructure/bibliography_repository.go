@@ -74,9 +74,45 @@ func NewCSVBibliographyRepository(filePath string) *CSVBibliographyRepository {
 // without any locking mechanism. Acceptable for single-user CLI usage, but consider file locking
 // or using a database with proper transaction support for production use.
 func (r *CSVBibliographyRepository) Save(b *domain.Bibliography) error {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return err
+	}
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	var all []*domain.Bibliography
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 9 {
+			continue
+		}
+		bibRecord := &BibliographyRecord{
+			ID:            record[0],
+			BibIndex:      record[1],
+			Code:          record[2],
+			Type:          record[3],
+			Title:         record[4],
+			Author:        record[5],
+			Publisher:     record[6],
+			ISBN:          record[7],
+			PublishedDate: record[8],
+		}
+		bib, err := recordToBibliography(bibRecord)
+		if err != nil {
+			slog.Error("Failed to convert bibliography record", "err", err)
+			continue
+		}
+		all = append(all, bib)
+	}
+
+	if iter.Err() != nil {
+		return iter.Err()
 	}
 
 	updated := false
@@ -94,19 +130,22 @@ func (r *CSVBibliographyRepository) Save(b *domain.Bibliography) error {
 	return r.writeAll(all)
 }
 
-func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
+func (r *CSVBibliographyRepository) FindAll(limit, offset int) ([]*domain.Bibliography, error) {
 	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var bibliographies []*domain.Bibliography
 	// Skip header
 	if len(records) > 0 {
 		records = records[1:]
 	}
 
-	for _, record := range records {
+	iter := NewCSVRecordIterator(records, limit, offset)
+	var bibliographies []*domain.Bibliography
+
+	for iter.Next() {
+		record := iter.Record()
 		if len(record) < 9 {
 			continue
 		}
@@ -131,39 +170,87 @@ func (r *CSVBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
 
 		bibliographies = append(bibliographies, bib)
 	}
-	return bibliographies, nil
+
+	return bibliographies, iter.Err()
 }
 
 // FindByBibIndex implements domain.BibliographyRepository.FindByBibIndex
-// Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
-// For large datasets, consider implementing caching or using a database for production use.
 func (r *CSVBibliographyRepository) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
-	for _, b := range all {
-		if b.BibIndex == bibIndex {
-			return b, nil
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 9 {
+			continue
+		}
+		// Optimization: Check BibIndex (index 1) before full conversion
+		if record[1] == bibIndex {
+			bibRecord := &BibliographyRecord{
+				ID:            record[0],
+				BibIndex:      record[1],
+				Code:          record[2],
+				Type:          record[3],
+				Title:         record[4],
+				Author:        record[5],
+				Publisher:     record[6],
+				ISBN:          record[7],
+				PublishedDate: record[8],
+			}
+			return recordToBibliography(bibRecord)
 		}
 	}
-	return nil, nil
+
+	return nil, iter.Err()
 }
 
 // FindByID implements domain.BibliographyRepository.FindByID
-// Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
-// For large datasets, consider implementing caching or using a database for production use.
 func (r *CSVBibliographyRepository) FindByID(id domain.BibliographyID) (*domain.Bibliography, error) {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
-	for _, b := range all {
-		if b.ID == id {
-			return b, nil
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	idStr := id.String()
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 9 {
+			continue
+		}
+		// Optimization: Check ID (index 0) before full conversion
+		if record[0] == idStr {
+			bibRecord := &BibliographyRecord{
+				ID:            record[0],
+				BibIndex:      record[1],
+				Code:          record[2],
+				Type:          record[3],
+				Title:         record[4],
+				Author:        record[5],
+				Publisher:     record[6],
+				ISBN:          record[7],
+				PublishedDate: record[8],
+			}
+			return recordToBibliography(bibRecord)
 		}
 	}
-	return nil, nil
+
+	return nil, iter.Err()
 }
 
 func (r *CSVBibliographyRepository) writeAll(bibliographies []*domain.Bibliography) error {

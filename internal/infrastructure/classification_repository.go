@@ -56,9 +56,39 @@ func NewCSVClassificationRepository(filePath string) *CSVClassificationRepositor
 // without any locking mechanism. Acceptable for single-user CLI usage, but consider file locking
 // or using a database with proper transaction support for production use.
 func (r *CSVClassificationRepository) Save(c *domain.Classification) error {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return err
+	}
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	var all []*domain.Classification
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 3 {
+			continue
+		}
+		classRecord := &ClassificationRecord{
+			ID:      record[0],
+			CodeNum: record[1],
+			Name:    record[2],
+		}
+		class, err := recordToClassification(classRecord)
+		if err != nil {
+			slog.Error("Failed to convert classification record", "err", err)
+			continue
+		}
+		all = append(all, class)
+	}
+
+	if iter.Err() != nil {
+		return iter.Err()
 	}
 
 	updated := false
@@ -76,18 +106,22 @@ func (r *CSVClassificationRepository) Save(c *domain.Classification) error {
 	return r.writeAll(all)
 }
 
-func (r *CSVClassificationRepository) FindAll() ([]*domain.Classification, error) {
+func (r *CSVClassificationRepository) FindAll(limit, offset int) ([]*domain.Classification, error) {
 	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var classifications []*domain.Classification
+	// Skip header
 	if len(records) > 0 {
 		records = records[1:]
 	}
 
-	for _, record := range records {
+	iter := NewCSVRecordIterator(records, limit, offset)
+	var classifications []*domain.Classification
+
+	for iter.Next() {
+		record := iter.Record()
 		if len(record) < 3 {
 			continue
 		}
@@ -106,20 +140,41 @@ func (r *CSVClassificationRepository) FindAll() ([]*domain.Classification, error
 
 		classifications = append(classifications, class)
 	}
-	return classifications, nil
+
+	return classifications, iter.Err()
 }
 
 func (r *CSVClassificationRepository) FindByCodeNum(codeNum int) (*domain.Classification, error) {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range all {
-		if c.CodeNum == codeNum {
-			return c, nil
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	codeNumStr := strconv.Itoa(codeNum)
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 3 {
+			continue
+		}
+		// Optimization: Check CodeNum (index 1) before full conversion
+		if record[1] == codeNumStr {
+			classRecord := &ClassificationRecord{
+				ID:      record[0],
+				CodeNum: record[1],
+				Name:    record[2],
+			}
+			return recordToClassification(classRecord)
 		}
 	}
-	return nil, nil
+
+	return nil, iter.Err()
 }
 
 func (r *CSVClassificationRepository) writeAll(classifications []*domain.Classification) error {

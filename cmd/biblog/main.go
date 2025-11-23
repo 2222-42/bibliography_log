@@ -186,7 +186,8 @@ func main() {
 
 	case "list":
 		_ = listCmd.Parse(os.Args[2:])
-		bibs, err := app.BibService.ListBibliographies()
+		// Default pagination: limit 100, offset 0
+		bibs, err := app.BibService.ListBibliographies(100, 0)
 		if err != nil {
 			fmt.Printf("Error listing bibliographies: %v\n", err)
 			os.Exit(1)
