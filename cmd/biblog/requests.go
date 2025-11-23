@@ -137,12 +137,8 @@ func (r *UpdateReviewRequest) PromptMissing() {
 	}
 	// If neither optional field is provided, prompt for them
 	if r.Goals == "" && r.Summary == "" {
-		if r.Goals == "" {
-			r.Goals = promptString("New goals", false)
-		}
-		if r.Summary == "" {
-			r.Summary = promptString("New summary", false)
-		}
+		r.Goals = promptString("New goals", false)
+		r.Summary = promptString("New summary", false)
 	}
 }
 
