@@ -73,9 +73,42 @@ func NewCSVReviewRepository(filePath string) *CSVReviewRepository {
 // Save implements domain.ReviewRepository.Save
 // This contains potential race condition. But, it is not a problem in this cli application.
 func (r *CSVReviewRepository) Save(review *domain.Review) error {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return err
+	}
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	var all []*domain.Review
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 6 {
+			continue
+		}
+		revRecord := &ReviewRecord{
+			ID:        record[0],
+			BookID:    record[1],
+			Goals:     record[2],
+			Summary:   record[3],
+			CreatedAt: record[4],
+			UpdatedAt: record[5],
+		}
+		rev, err := recordToReview(revRecord)
+		if err != nil {
+			slog.Error("Failed to convert review record", "err", err)
+			continue
+		}
+		all = append(all, rev)
+	}
+
+	if iter.Err() != nil {
+		return iter.Err()
 	}
 
 	updated := false
@@ -93,18 +126,22 @@ func (r *CSVReviewRepository) Save(review *domain.Review) error {
 	return r.writeAll(all)
 }
 
-func (r *CSVReviewRepository) FindAll() ([]*domain.Review, error) {
+func (r *CSVReviewRepository) FindAll(limit, offset int) ([]*domain.Review, error) {
 	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var reviews []*domain.Review
+	// Skip header
 	if len(records) > 0 {
 		records = records[1:]
 	}
 
-	for _, record := range records {
+	iter := NewCSVRecordIterator(records, limit, offset)
+	var reviews []*domain.Review
+
+	for iter.Next() {
+		record := iter.Record()
 		if len(record) < 6 {
 			continue
 		}
@@ -126,37 +163,87 @@ func (r *CSVReviewRepository) FindAll() ([]*domain.Review, error) {
 
 		reviews = append(reviews, rev)
 	}
-	return reviews, nil
+
+	return reviews, iter.Err()
 }
 
 // FindByID implements domain.ReviewRepository.FindByID
-// Performance Note: This method calls FindAll() which reads and parses the entire CSV file.
-// For large datasets, consider implementing caching or using a database for production use.
 func (r *CSVReviewRepository) FindByID(id domain.ReviewID) (*domain.Review, error) {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
-	for _, review := range all {
-		if review.ID == id {
-			return review, nil
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	idStr := id.String()
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 6 {
+			continue
+		}
+		// Optimization: Check ID (index 0) before full conversion
+		if record[0] == idStr {
+			revRecord := &ReviewRecord{
+				ID:        record[0],
+				BookID:    record[1],
+				Goals:     record[2],
+				Summary:   record[3],
+				CreatedAt: record[4],
+				UpdatedAt: record[5],
+			}
+			return recordToReview(revRecord)
 		}
 	}
-	return nil, nil
+
+	return nil, iter.Err()
 }
 
 func (r *CSVReviewRepository) FindByBookID(bookID domain.BibliographyID) ([]*domain.Review, error) {
-	all, err := r.FindAll()
+	records, err := ReadCSV(r.FilePath)
 	if err != nil {
 		return nil, err
 	}
+
+	// Skip header
+	if len(records) > 0 {
+		records = records[1:]
+	}
+
+	iter := NewCSVRecordIterator(records, 0, 0)
+	bookIDStr := bookID.String()
 	var matches []*domain.Review
-	for _, review := range all {
-		if review.BookID == bookID {
-			matches = append(matches, review)
+
+	for iter.Next() {
+		record := iter.Record()
+		if len(record) < 6 {
+			continue
+		}
+		// Optimization: Check BookID (index 1) before full conversion
+		if record[1] == bookIDStr {
+			revRecord := &ReviewRecord{
+				ID:        record[0],
+				BookID:    record[1],
+				Goals:     record[2],
+				Summary:   record[3],
+				CreatedAt: record[4],
+				UpdatedAt: record[5],
+			}
+			rev, err := recordToReview(revRecord)
+			if err != nil {
+				slog.Error("Failed to convert review record", "err", err)
+				continue
+			}
+			matches = append(matches, rev)
 		}
 	}
-	return matches, nil
+
+	return matches, iter.Err()
 }
 
 func (r *CSVReviewRepository) writeAll(reviews []*domain.Review) error {

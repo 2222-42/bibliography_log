@@ -110,8 +110,8 @@ func (s *BibliographyService) AddBibliography(title, author, publisher, isbn, ty
 	return bib, nil
 }
 
-func (s *BibliographyService) ListBibliographies() ([]*domain.Bibliography, error) {
-	return s.bibRepo.FindAll()
+func (s *BibliographyService) ListBibliographies(limit, offset int) ([]*domain.Bibliography, error) {
+	return s.bibRepo.FindAll(limit, offset)
 }
 
 func (s *BibliographyService) FindByBibIndex(bibIndex string) (*domain.Bibliography, error) {

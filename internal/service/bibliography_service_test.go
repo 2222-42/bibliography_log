@@ -21,10 +21,21 @@ func (m *MockBibliographyRepository) Save(b *domain.Bibliography) error {
 	return nil
 }
 
-func (m *MockBibliographyRepository) FindAll() ([]*domain.Bibliography, error) {
+func (m *MockBibliographyRepository) FindAll(limit, offset int) ([]*domain.Bibliography, error) {
 	var bibs []*domain.Bibliography
 	for _, b := range m.Bibliographies {
 		bibs = append(bibs, b)
+	}
+	// Apply offset
+	if offset > 0 {
+		if offset >= len(bibs) {
+			return []*domain.Bibliography{}, nil
+		}
+		bibs = bibs[offset:]
+	}
+	// Apply limit
+	if limit > 0 && limit < len(bibs) {
+		bibs = bibs[:limit]
 	}
 	return bibs, nil
 }
@@ -53,7 +64,7 @@ func (m *MockClassificationRepository) Save(c *domain.Classification) error {
 	return nil
 }
 
-func (m *MockClassificationRepository) FindAll() ([]*domain.Classification, error) {
+func (m *MockClassificationRepository) FindAll(limit, offset int) ([]*domain.Classification, error) {
 	return nil, nil
 }
 

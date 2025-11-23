@@ -42,8 +42,8 @@ func TestCSVBibliographyRepository_SaveAndFind(t *testing.T) {
 		t.Fatalf("Failed to save bibliography: %v", err)
 	}
 
-	// Test FindAll
-	all, err := repo.FindAll()
+	// Test FindAll (get all records with limit=0, offset=0)
+	all, err := repo.FindAll(0, 0)
 	if err != nil {
 		t.Fatalf("Failed to find all: %v", err)
 	}

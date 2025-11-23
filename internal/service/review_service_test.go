@@ -20,10 +20,21 @@ func (m *MockReviewRepository) Save(review *domain.Review) error {
 	return nil
 }
 
-func (m *MockReviewRepository) FindAll() ([]*domain.Review, error) {
+func (m *MockReviewRepository) FindAll(limit, offset int) ([]*domain.Review, error) {
 	var reviews []*domain.Review
 	for _, r := range m.Reviews {
 		reviews = append(reviews, r)
+	}
+	// Apply offset
+	if offset > 0 {
+		if offset >= len(reviews) {
+			return []*domain.Review{}, nil
+		}
+		reviews = reviews[offset:]
+	}
+	// Apply limit
+	if limit > 0 && limit < len(reviews) {
+		reviews = reviews[:limit]
 	}
 	return reviews, nil
 }
