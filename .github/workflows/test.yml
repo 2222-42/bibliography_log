@@ -25,9 +25,6 @@ jobs:
     - name: Verify dependencies
       run: go mod verify
 
-    - name: Run tests
-      run: go test -v ./...
-
     - name: Run tests with coverage
       run: go test -v -coverprofile=coverage.out ./...
 
